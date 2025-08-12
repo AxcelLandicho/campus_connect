@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Dashboard | CampusConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tab-active { background-color: #e0f2fe; color: #2563eb; font-weight: 600; }
+    .tab-inactive { color: #64748b; }
+    .modal-bg { background: rgba(0,0,0,0.5); }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-blue-100 via-blue-200 to-blue-300 min-h-screen">
+  <!-- Top Navigation Bar -->
+  <nav class="bg-white shadow-lg px-8 py-4 flex items-center justify-between sticky top-0 z-20">
+    <div class="flex items-center gap-4">
+      <span class="text-2xl font-bold text-blue-700">CampusConnect</span>
+      <span class="ml-4 text-blue-600 font-semibold">Student Dashboard</span>
+    </div>
+    <div class="flex items-center gap-6">
+      <button class="tab-btn tab-active px-4 py-2 rounded transition text-blue-700 font-semibold hover:bg-blue-100" data-tab="dashboard">Upcoming Events</button>
+      <button class="tab-btn tab-inactive px-4 py-2 rounded transition text-blue-700 font-semibold hover:bg-blue-100" data-tab="ongoing">Ongoing Events</button>
+      <button class="tab-btn tab-inactive px-4 py-2 rounded transition text-blue-700 font-semibold hover:bg-blue-100" data-tab="past">Past Events</button>
+      <span class="text-gray-500 text-sm">Student</span>
+      <button onclick="logout()" class="text-red-500 hover:underline font-semibold">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="w-full bg-gradient-to-r from-blue-200 via-blue-100 to-blue-50 py-10 mb-8 shadow-md">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 px-6">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-blue-800 mb-2">Welcome, <span id="studentName" class="text-blue-600">Student</span>!</h1>
+        <p class="text-lg text-blue-700 mb-2">Course: <span id="studentCourse" class="font-semibold"></span></p>
+        <p class="text-md text-gray-600">Discover, RSVP, and track your campus events in one place.</p>
+      </div>
+      <div class="flex flex-col gap-4 items-center">
+        <div class="flex gap-6">
+          <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center min-w-[120px]">
+            <span class="text-3xl font-bold text-blue-600" id="totalRsvps">0</span>
+            <span class="text-gray-600 mt-2">Total RSVP'd</span>
+          </div>
+          <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center min-w-[120px]">
+            <span class="text-3xl font-bold text-green-600" id="totalAttended">0</span>
+            <span class="text-gray-600 mt-2">Events Joined</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-4">
+    <!-- Upcoming Events Tab -->
+    <section id="tab-dashboard" class="tab-content">
+      <h1 class="text-2xl font-bold text-blue-800 mb-6">Events</h1>
+      <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4 bg-blue-50 p-4 rounded-xl shadow">
+        <input id="searchUpcoming" type="text" placeholder="Search events..." class="border border-blue-200 rounded px-3 py-2 w-full md:w-64 focus:ring-2 focus:ring-blue-400 outline-none"/>
+        <select id="filterUpcomingOrg" class="border border-blue-200 rounded px-3 py-2 w-full md:w-48 focus:ring-2 focus:ring-blue-400 outline-none">
+          <option value="">All Organizations</option>
+        </select>
+        <input id="filterUpcomingDate" type="date" class="border border-blue-200 rounded px-3 py-2 w-full md:w-48 focus:ring-2 focus:ring-blue-400 outline-none"/>
+        <button id="refreshBtn" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold shadow">Refresh</button>
+      </div>
+      <div class="bg-white rounded-xl shadow overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-blue-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Event Name</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Date/Time</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Venue</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Organization</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">RSVP Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="eventTableBody" class="divide-y divide-blue-100"></tbody>
+        </table>
+      </div>
+      <div id="upcomingEventsNoneMsg" class="text-center text-gray-400 mt-4 hidden">No upcoming events found.</div>
+    </section>
+    <!-- Ongoing Events Tab -->
+    <section id="tab-ongoing" class="tab-content hidden">
+      <h1 class="text-2xl font-bold text-blue-800 mb-6">Ongoing Events</h1>
+      <div class="bg-white rounded-xl shadow overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-blue-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Event Name</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Date/Time</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Venue</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Organization</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">RSVP Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Attendance</th>
+            </tr>
+          </thead>
+          <tbody id="ongoingEventsTableBody" class="divide-y divide-blue-100"></tbody>
+        </table>
+      </div>
+      <div id="ongoingEventsNoneMsg" class="text-center text-gray-400 mt-4 hidden">No ongoing events.</div>
+    </section>
+    <!-- Past Events Tab -->
+    <section id="tab-past" class="tab-content hidden">
+      <h1 class="text-2xl font-bold text-blue-800 mb-6">Past Events</h1>
+      <div class="bg-white rounded-xl shadow overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-blue-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Event Name</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Date/Time</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Venue</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Organization</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">RSVP Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">Attendance</th>
+            </tr>
+          </thead>
+          <tbody id="pastEventsTableBody" class="divide-y divide-blue-100"></tbody>
+        </table>
+      </div>
+      <div id="pastEventsNoneMsg" class="text-center text-gray-400 mt-4 hidden">No past events.</div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-6 right-6 z-50 hidden px-6 py-3 rounded shadow-lg text-white font-semibold"></div>
+
+  <!-- Event Details Modal -->
+  <div id="eventDetailsModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-bg">
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center max-w-lg w-full relative">
+      <button onclick="closeEventDetailsModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      <h2 class="text-xl font-bold text-blue-800 mb-4" id="modalEventName">Event Name</h2>
+      <div class="mb-2 text-gray-600" id="modalEventDate"></div>
+      <div class="mb-2 text-gray-600" id="modalEventTime"></div>
+      <div class="mb-2 text-gray-600" id="modalEventVenue"></div>
+      <div class="mb-2 text-gray-600" id="modalEventOrg"></div>
+      <div class="mb-2 text-gray-500" id="modalEventDesc"></div>
+      <div class="mb-2"><span class="font-semibold">Status:</span> <span id="modalEventStatus"></span></div>
+      <div class="flex flex-col gap-4 w-full">
+        <div class="flex gap-2 justify-center">
+          <button id="modalAttendBtn" class="bg-green-500 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold">Attend</button>
+          <button id="modalNotAttendingBtn" class="bg-red-500 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold">Not Attending</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendees List Modal -->
+  <div id="attendeesModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-bg">
+    <div class="bg-white rounded-xl shadow-lg p-8 flex flex-col max-w-2xl w-full relative">
+      <button onclick="closeAttendeesModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      <h2 class="text-xl font-bold text-blue-800 mb-4">Attendees List</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-blue-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase">Student Email</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase">RSVP Type</th>
+            </tr>
+          </thead>
+          <tbody id="attendeesListBody" class="divide-y divide-blue-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit RSVP Modal -->
+  <div id="editRsvpModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-bg">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+      <button onclick="closeEditRsvpModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">X</button>
+      <h2 class="text-xl font-bold text-blue-800 mb-4">Edit RSVP</h2>
+      <form id="editRsvpForm" class="space-y-4">
+        <div>
+          <label class="block text-blue-800 font-semibold mb-1">RSVP Status</label>
+          <select id="editRsvpStatus" class="w-full border border-blue-200 rounded px-3 py-2">
+            <option value="attending">Attending</option>
+            <option value="not_attending">Not Attending</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeEditRsvpModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded font-semibold">Cancel</button>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let studentId = localStorage.getItem('studentId');
+    let studentEmail = localStorage.getItem('studentEmail');
+    let allEvents = [];
+    let myRsvps = [];
+    let upcomingEvents = [];
+
+    console.log('Initial student data:', { id: studentId, email: studentEmail });
+
+    // Check authentication immediately
+    if (!studentId || !studentEmail || studentId === 'undefined') {
+        console.log('Missing student data, redirecting to login');
+        localStorage.clear();
+        window.location.href = './login.html';
+    }
+
+    async function loadStudentInfo() {
+        try {
+            console.log('Loading student info for ID:', studentId);
+            if (!studentId || !studentEmail || studentId === 'undefined') {
+                console.error('Missing required student data');
+                document.getElementById('studentName').textContent = 'Student (not found)';
+                document.getElementById('studentCourse').textContent = '';
+                return false;
+            }
+            const res = await fetch(`http://localhost:5000/api/users/${studentId}`);
+            if (!res.ok) {
+                console.error('Failed to fetch user info:', res.status);
+                document.getElementById('studentName').textContent = 'Student (not found)';
+                document.getElementById('studentCourse').textContent = '';
+                return false;
+            }
+            const user = await res.json();
+            console.log('Received user data:', user);
+            if (!user || !user.email) {
+                console.error('Invalid user data received:', user);
+                document.getElementById('studentName').textContent = 'Student (not found)';
+                document.getElementById('studentCourse').textContent = '';
+                return false;
+            }
+            document.getElementById('studentName').textContent = user.name ? user.name.toUpperCase() + '!' : 'Student!';
+            document.getElementById('studentCourse').textContent = user.course || '';
+            const newStudentId = user.id || user.email;
+            localStorage.setItem('studentId', newStudentId);
+            localStorage.setItem('studentEmail', user.email);
+            studentId = newStudentId;
+            studentEmail = user.email;
+            console.log('Successfully loaded student info:', { id: studentId, email: studentEmail });
+            return true;
+        } catch (error) {
+            console.error('Error in loadStudentInfo:', error);
+            document.getElementById('studentName').textContent = 'Student (error)';
+            document.getElementById('studentCourse').textContent = '';
+            return false;
+        }
+    }
+
+    async function loadEvents() {
+        try {
+            console.log('Loading events...');
+            const res = await fetch('http://localhost:5000/api/events');
+            if (!res.ok) throw new Error('Failed to fetch events');
+            allEvents = await res.json();
+            console.log('Loaded events:', allEvents);
+            // Do NOT render here!
+            updateOrgFilter();
+            return true;
+        } catch (error) {
+            console.error('Error loading events:', error);
+            showToast('Failed to load events', 'error');
+            return false;
+        }
+    }
+
+    async function loadMyEvents() {
+        try {
+            console.log('Loading RSVPs for student:', studentId);
+            const res = await fetch(`http://localhost:5000/api/users/${studentId}/rsvps`);
+            if (!res.ok) {
+                throw new Error('Failed to fetch RSVPs');
+            }
+            myRsvps = await res.json();
+            console.log('Loaded RSVPs:', myRsvps);
+            return true;
+        } catch (error) {
+            console.error('Error loading RSVPs:', error);
+            showToast('Failed to load RSVPs', 'error');
+            return false;
+        }
+    }
+
+    // Initialize dashboard
+    async function initializeDashboard() {
+        try {
+            console.log('Initializing dashboard...');
+            const studentInfoLoaded = await loadStudentInfo();
+            if (!studentInfoLoaded) {
+                console.error('Failed to load student info');
+                showToast('Failed to load student information', 'error');
+                return;
+            }
+            // Load events and RSVPs in parallel
+            const [eventsLoaded, rsvpsLoaded] = await Promise.all([
+                loadEvents(),
+                loadMyEvents()
+            ]);
+            if (!eventsLoaded || !rsvpsLoaded) {
+                console.error('Failed to load events or RSVPs');
+                showToast('Failed to load some data', 'error');
+                return;
+            }
+            // Now render all event types
+            const now = new Date();
+            const upcomingEvents = allEvents.filter(event => {
+                const start = new Date(`${event.date}T${event.startTime}`);
+                return start > now;
+            });
+            const ongoingEvents = allEvents.filter(event => {
+                const start = new Date(`${event.date}T${event.startTime}`);
+                const end = new Date(`${event.date}T${event.endTime}`);
+                return start <= now && end >= now;
+            });
+            const pastEvents = allEvents.filter(event => {
+                const end = new Date(`${event.date}T${event.endTime}`);
+                return end < now;
+            });
+            renderUpcomingEvents();
+            renderOngoingEvents(ongoingEvents);
+            renderPastEvents(pastEvents);
+            updateStats();
+        } catch (error) {
+            console.error('Dashboard initialization error:', error);
+            showToast('Error loading dashboard. Please try again.', 'error');
+        }
+    }
+
+    // Start initialization when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeDashboard);
+    } else {
+        initializeDashboard();
+    }
+
+    // --- Tab Switching ---
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        this.classList.add('tab-active');
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+        document.getElementById('tab-' + this.dataset.tab).classList.remove('hidden');
+        if (this.dataset.tab === 'dashboard') loadEvents();
+        if (this.dataset.tab === 'past') renderPastEvents();
+        if (this.dataset.tab === 'history') renderRsvpHistory();
+      });
+    });
+
+    function logout() {
+      localStorage.removeItem('studentId');
+      localStorage.removeItem('studentEmail');
+      window.location.href = './login.html';
+    }
+
+    // --- Event Fetching and Rendering ---
+    function renderEventTable() {
+      const tableBody = document.getElementById('eventTableBody');
+      const noneMsg = document.getElementById('upcomingEventsNoneMsg');
+      
+      // Get search/filter values
+      const search = document.getElementById('searchUpcoming').value.toLowerCase();
+      const org = document.getElementById('filterUpcomingOrg').value;
+      const date = document.getElementById('filterUpcomingDate').value;
+      
+      // Filter upcoming and ongoing events
+      const now = new Date();
+      let filtered = allEvents.filter(event => {
+        const start = new Date(`${event.date}T${event.startTime}`);
+        const end = new Date(`${event.date}T${event.endTime}`);
+        return end >= now; // upcoming or ongoing
+      });
+      // Always sort by soonest date/time first
+      filtered = filtered.sort((a, b) => {
+        const aStart = new Date(`${a.date}T${a.startTime}`);
+        const bStart = new Date(`${b.date}T${b.startTime}`);
+        return aStart - bStart;
+      });
+
+      if (search) {
+        filtered = filtered.filter(e => 
+          e.name.toLowerCase().includes(search) || 
+          e.organization.toLowerCase().includes(search)
+        );
+      }
+      if (org) filtered = filtered.filter(e => e.organization === org);
+      if (date) filtered = filtered.filter(e => e.date === date);
+      
+      tableBody.innerHTML = '';
+      if (!filtered.length) {
+        noneMsg.classList.remove('hidden');
+        // Log for debugging
+        console.warn('No upcoming events found. Filtered:', filtered, 'All events:', allEvents);
+        return;
+      } else {
+        noneMsg.classList.add('hidden');
+      }
+
+      filtered.forEach(event => {
+        // Use type-agnostic comparison for eventId
+        const rsvp = myRsvps.find(r => String(r.eventId) === String(event.id));
+        let rsvpStatusBadge = '';
+        if (!rsvp) {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800'>Not RSVP'd</span>`;
+        } else if (rsvp.attended) {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800'>Will Attend</span>`;
+        } else {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800'>Will Not Attend</span>`;
+        }
+
+        // Determine event status
+        const now = new Date();
+        const start = new Date(`${event.date}T${event.startTime}`);
+        const end = new Date(`${event.date}T${event.endTime}`);
+        let status = '';
+        if (now < start) {
+          status = '<span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Upcoming</span>';
+        } else if (now >= start && now <= end) {
+          status = '<span class="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Ongoing</span>';
+        } else {
+          status = '<span class="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">Past</span>';
+        }
+
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-blue-50 transition cursor-pointer';
+        row.onclick = () => showEventDetailsModal(event.id, !!rsvp);
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-800">${event.name}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.date} | ${event.startTime} - ${event.endTime}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.venue}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.organization}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${status}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${rsvpStatusBadge}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded" onclick="event.stopPropagation(); showEventDetailsModal('${event.id}', ${!!rsvp})">Show Details</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function renderPastEvents() {
+      const tableBody = document.getElementById('pastEventsTableBody');
+      const noneMsg = document.getElementById('pastEventsNoneMsg');
+      tableBody.innerHTML = '';
+      const now = new Date();
+      const pastEvents = allEvents.filter(event => {
+        const end = new Date(`${event.date}T${event.endTime}`);
+        return end < now;
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+      if (!pastEvents.length) { noneMsg.classList.remove('hidden'); return; } else { noneMsg.classList.add('hidden'); }
+      pastEvents.forEach(event => {
+        const rsvp = myRsvps.find(r => String(r.eventId) === String(event.id));
+        let rsvpStatusBadge = '';
+        if (!rsvp) {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800'>Not RSVP'd</span>`;
+        } else if (rsvp.attended) {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800'>Will Attend</span>`;
+        } else {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800'>Will Not Attend</span>`;
+        }
+        const attendance = rsvp && rsvp.present ? 'Present' : 'Absent';
+        const attendanceClass = rsvp && rsvp.present ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-blue-50 transition cursor-pointer';
+        row.onclick = () => showEventDetailsModal(event.id, !!rsvp);
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-800">${event.name}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.date} | ${event.startTime} - ${event.endTime}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.venue}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.organization}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">Past</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${rsvpStatusBadge}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold ${attendanceClass}">${attendance}</span>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Update stats after loading RSVPs
+    function updateStats() {
+        console.log('Updating stats with RSVPs:', myRsvps);
+        // Only count RSVPs for events that still exist
+        const validEventIds = new Set(allEvents.map(e => String(e.id)));
+        const validRsvps = myRsvps.filter(r => validEventIds.has(String(r.eventId)));
+        // Total RSVP'd: all events where the student has RSVP'd (attending or not attending)
+        const total = validRsvps.filter(r => typeof r.attended === 'boolean').length;
+        // Total Attended: count where present === true
+        const attended = validRsvps.filter(r => r.present === true).length;
+        document.getElementById('totalRsvps').textContent = total;
+        document.getElementById('totalAttended').textContent = attended;
+        console.log('Updated stats:', { total, attended });
+    }
+
+    // --- RSVP Actions ---
+    async function attendEvent(eventId) {
+      if (!studentId || !studentEmail) {
+        showToast('Please log in again', 'error');
+        window.location.href = './login.html';
+        return;
+      }
+      try {
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}/rsvp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId, studentEmail, attended: true, present: false })
+        });
+        const data = await res.json().catch(() => ({}));
+        console.log('RSVP response:', res, data);
+        if (!res.ok) {
+          console.error('RSVP error:', data);
+          showToast(data.error || data.message || 'Failed to RSVP to event', 'error');
+          return;
+        }
+        showToast('Successfully RSVP\'d to event!');
+        await loadMyEvents();
+        renderUpcomingEvents(); // Update table immediately
+        updateStats();
+      } catch (error) {
+        console.error('RSVP exception:', error);
+        showToast('Failed to RSVP to event', 'error');
+      }
+    }
+
+    async function notAttendEvent(eventId) {
+      if (!studentId || !studentEmail) {
+        showToast('Please log in again', 'error');
+        window.location.href = './login.html';
+        return;
+      }
+      try {
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}/rsvp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId, studentEmail, attended: false, present: false })
+        });
+        const data = await res.json().catch(() => ({}));
+        console.log('RSVP response:', res, data);
+        if (!res.ok) {
+          console.error('RSVP error:', data);
+          showToast(data.error || data.message || 'Failed to update RSVP status', 'error');
+          return;
+        }
+        showToast('Successfully marked as not attending');
+        await loadMyEvents();
+        renderUpcomingEvents(); // Update table immediately
+        updateStats();
+      } catch (error) {
+        console.error('RSVP exception:', error);
+        showToast('Failed to update RSVP status', 'error');
+      }
+    }
+
+    // --- Event Details Modal Logic ---
+    function showEventDetailsModal(eventId, isRsvped, isOngoing = false) {
+      // Always get the latest RSVP state from myRsvps
+      const event = allEvents.find(e => String(e.id) === String(eventId));
+      if (!event) {
+        console.error('Event not found:', eventId);
+        return;
+      }
+      const modal = document.getElementById('eventDetailsModal');
+      if (!modal) {
+        console.error('Modal element not found');
+        return;
+      }
+      document.getElementById('modalEventName').textContent = event.name;
+      document.getElementById('modalEventDate').textContent = `Date: ${event.date}`;
+      document.getElementById('modalEventTime').textContent = `Time: ${event.startTime} - ${event.endTime}`;
+      document.getElementById('modalEventVenue').textContent = `Venue: ${event.venue}`;
+      document.getElementById('modalEventOrg').textContent = `Organization: ${event.organization}`;
+      document.getElementById('modalEventDesc').textContent = event.description;
+      // Show/hide Attend/Not Attending buttons in modal
+      const attendBtn = document.getElementById('modalAttendBtn');
+      const notAttendBtn = document.getElementById('modalNotAttendingBtn');
+      // Disable RSVP for past or ongoing events
+      const now = new Date();
+      const end = new Date(`${event.date}T${event.endTime}`);
+      const start = new Date(`${event.date}T${event.startTime}`);
+      // --- RSVP Status in modal should match RSVP column ---
+      const rsvp = myRsvps.find(r => String(r.eventId) === String(event.id));
+      const rsvpStatusElem = document.getElementById('modalEventStatus');
+      if (!rsvp) {
+        rsvpStatusElem.innerHTML = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800'>Not RSVP'd</span>`;
+      } else if (rsvp.attended) {
+        rsvpStatusElem.innerHTML = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800'>Will Attend</span>`;
+      } else {
+        rsvpStatusElem.innerHTML = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800'>Will Not Attend</span>`;
+      }
+      if (end < now || (isOngoing || (now >= start && now <= end))) {
+        if (attendBtn) attendBtn.style.display = 'none';
+        if (notAttendBtn) notAttendBtn.style.display = 'none';
+      } else {
+        // Always get the latest RSVP state
+        let currentRsvp = rsvp;
+        if (currentRsvp) {
+          if (currentRsvp.attended) {
+            attendBtn.style.display = 'none';
+            notAttendBtn.style.display = 'block';
+          } else {
+            attendBtn.style.display = 'block';
+            notAttendBtn.style.display = 'none';
+          }
+        } else {
+          attendBtn.style.display = 'block';
+          notAttendBtn.style.display = 'none';
+        }
+        // Button logic
+        attendBtn.onclick = async function() {
+          try {
+            await attendEvent(event.id);
+            await loadMyEvents();
+            showEventDetailsModal(event.id, true, isOngoing);
+          } catch (error) {
+            showToast('Failed to RSVP to event', 'error');
+          }
+        };
+        notAttendBtn.onclick = async function() {
+          try {
+            await notAttendEvent(event.id);
+            await loadMyEvents();
+            showEventDetailsModal(event.id, false, isOngoing);
+          } catch (error) {
+            showToast('Failed to update RSVP status', 'error');
+          }
+        };
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function closeEventDetailsModal() {
+      document.getElementById('eventDetailsModal').classList.add('hidden');
+    }
+
+    // --- Manual Refresh Button Logic ---
+    document.getElementById('refreshBtn').addEventListener('click', async function() {
+      await loadMyEvents();
+      await loadEvents();
+      renderUpcomingEvents();
+    });
+
+    // --- Populate Organization Filter Options ---
+    document.addEventListener('DOMContentLoaded', () => {
+      const courses = [
+        "All Engineering Courses",
+        "BS Chemical Engineering",
+        "BS Civil Engineering",
+        "BS Computer Engineering",
+        "BS Electrical Engineering",
+        "BS Electronics Engineering",
+        "BS Food Engineering",
+        "BS Industrial Engineering",
+        "BS Instrumentation & Control Engineering",
+        "BS Mechanical Engineering",
+        "BS Mechatronics Engineering",
+        "BS Petroleum Engineering",
+        "BS Sanitary Engineering",
+        "BS Automotive Engineering",
+        "BS Aerospace Engineering",
+        "BS Transportation Engineering",
+        "BS Biomedical Engineering",
+        "BS Geodetic Engineering",
+        "BS Geological Engineering",
+        "BS Ceramics Engineering",
+        "BS Metallurgical Engineering",
+        "BS Naval Architecture and Marine Engineering"
+      ];
+      const orgSelect = document.getElementById('filterUpcomingOrg');
+      orgSelect.innerHTML = '<option value="">All Courses</option>';
+      courses.forEach(course => {
+        const opt = document.createElement('option');
+        opt.value = course;
+        opt.textContent = course;
+        orgSelect.appendChild(opt);
+      });
+    });
+
+    // --- Loading and Toast Functions ---
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `fixed top-6 right-6 z-50 px-6 py-3 rounded shadow-lg text-white font-semibold ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    // --- Auto-refresh every 10s ---
+    setInterval(async () => {
+      await loadMyEvents();
+      await loadEvents();
+      renderUpcomingEvents();
+    }, 10000);
+
+    async function loadUserProfile() {
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          document.getElementById('profileName').textContent = userData.name;
+          document.getElementById('profileEmail').textContent = userData.email;
+          document.getElementById('profileInitials').textContent = getUserInitials(userData.name);
+          document.getElementById('profileNameInput').value = userData.name;
+          toggleEditMode(false);
+          // Load profile picture from backend
+          loadProfilePic(userData.name, userData.profilePicUrl);
+        } else {
+          showToast('Failed to load profile data.', 'error');
+        }
+      } catch (error) {
+        showToast('Error loading profile data.', 'error');
+      }
+    }
+
+    // Accepts a URL from backend, falls back to initials/avatar
+    function loadProfilePic(name, url) {
+      const img = document.getElementById('profilePic');
+      const initials = document.getElementById('profileInitials');
+      if (url) {
+        img.src = url;
+        initials.style.display = 'none';
+      } else {
+        img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=bfdbfe&color=2563eb&size=128`;
+        initials.textContent = getUserInitials(name);
+        initials.style.display = 'none';
+      }
+    }
+
+    // Utility to check if event is past
+    function isPastEvent(event) {
+      const end = new Date(`${event.date}T${event.endTime}`);
+      return end < new Date();
+    }
+
+    window.showEventDetailsModal = showEventDetailsModal;
+
+    // Edit RSVP modal
+    let editingEventId = null;
+    function openEditRsvpModal(eventId) {
+      editingEventId = eventId;
+      document.getElementById('editRsvpModal').classList.remove('hidden');
+    }
+    function closeEditRsvpModal() {
+      document.getElementById('editRsvpModal').classList.add('hidden');
+      editingEventId = null;
+    }
+    document.getElementById('editRsvpForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const status = document.getElementById('editRsvpStatus').value;
+      await fetch(`http://localhost:5000/api/events/${editingEventId}/rsvp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId,
+          studentEmail,
+          attended: status === 'attending'
+        })
+      });
+      closeEditRsvpModal();
+      await loadMyEvents();
+    };
+
+    function renderOngoingEvents(ongoingEvents) {
+      const tbody = document.getElementById('ongoingEventsTableBody');
+      const noneMsg = document.getElementById('ongoingEventsNoneMsg');
+      tbody.innerHTML = '';
+      
+      if (!ongoingEvents.length) {
+        noneMsg.classList.remove('hidden');
+        return;
+      }
+      
+      noneMsg.classList.add('hidden');
+      ongoingEvents.forEach(event => {
+        const row = document.createElement('tr');
+        const rsvp = myRsvps.find(r => String(r.eventId) === String(event.id));
+        const rsvpStatus = rsvp ? (rsvp.attended ? 'Attending' : 'Not Attending') : 'Not RSVP\'d';
+        const rsvpClass = rsvp ? (rsvp.attended ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') : 'bg-gray-100 text-gray-800';
+        const attendance = rsvp && rsvp.present ? 'Present' : 'Absent';
+        const attendanceClass = rsvp && rsvp.present ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.name}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.date} ${event.startTime} - ${event.endTime}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.venue}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.organization}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+              Ongoing
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold ${rsvpClass}">
+              ${rsvpStatus}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold ${attendanceClass}">${attendance}</span>
+          </td>
+        `;
+        row.classList.add('cursor-pointer');
+        row.onclick = () => showEventDetailsModal(event.id, !!rsvp, true);
+        tbody.appendChild(row);
+      });
+    }
+
+    function renderUpcomingEvents() {
+      const tableBody = document.getElementById('eventTableBody');
+      const noneMsg = document.getElementById('upcomingEventsNoneMsg');
+      tableBody.innerHTML = '';
+      const now = new Date();
+      // Get search/filter values
+      const search = document.getElementById('searchUpcoming').value.toLowerCase();
+      const org = document.getElementById('filterUpcomingOrg').value;
+      const date = document.getElementById('filterUpcomingDate').value;
+      // Only events that are strictly upcoming (start > now, not ongoing, not past)
+      let upcoming = allEvents.filter(event => {
+        const start = new Date(`${event.date}T${event.startTime}`);
+        return start > now;
+      });
+      // Apply filters
+      if (search) {
+        upcoming = upcoming.filter(e => 
+          e.name.toLowerCase().includes(search) || 
+          e.organization.toLowerCase().includes(search)
+        );
+      }
+      if (org) upcoming = upcoming.filter(e => e.organization === org);
+      if (date) upcoming = upcoming.filter(e => e.date === date);
+      // Always sort by soonest date/time first
+      upcoming = upcoming.sort((a, b) => {
+        const aStart = new Date(`${a.date}T${a.startTime}`);
+        const bStart = new Date(`${b.date}T${b.startTime}`);
+        return aStart - bStart;
+      });
+      if (!upcoming.length) { noneMsg.classList.remove('hidden'); return; } else { noneMsg.classList.add('hidden'); }
+      upcoming.forEach(event => {
+        const rsvp = myRsvps.find(r => String(r.eventId) === String(event.id));
+        let rsvpStatusBadge = '';
+        if (!rsvp) {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800'>Not RSVP'd</span>`;
+        } else if (rsvp.attended) {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800'>Will Attend</span>`;
+        } else {
+          rsvpStatusBadge = `<span class='px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800'>Will Not Attend</span>`;
+        }
+        const status = '<span class="px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Upcoming</span>';
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-blue-50 transition cursor-pointer';
+        row.onclick = () => showEventDetailsModal(event.id, !!rsvp);
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-800">${event.name}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.date} | ${event.startTime} - ${event.endTime}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.venue}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.organization}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${status}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">${rsvpStatusBadge}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <button class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded" onclick="event.stopPropagation(); showEventDetailsModal('${event.id}', ${!!rsvp})">Show Details</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function updateOrgFilter() {
+      const orgSelect = document.getElementById('filterUpcomingOrg');
+      if (!orgSelect) return;
+      // Get unique organizations from allEvents
+      const orgs = Array.from(new Set(allEvents.map(e => e.organization))).sort();
+      orgSelect.innerHTML = '<option value="">All Organizations</option>';
+      orgs.forEach(org => {
+        const opt = document.createElement('option');
+        opt.value = org;
+        opt.textContent = org;
+        orgSelect.appendChild(opt);
+      });
+    }
+
+    // Attach live filter/search listeners for upcoming events tab
+    document.getElementById('searchUpcoming').addEventListener('input', renderUpcomingEvents);
+    document.getElementById('filterUpcomingOrg').addEventListener('change', renderUpcomingEvents);
+    document.getElementById('filterUpcomingDate').addEventListener('change', renderUpcomingEvents);
+  </script>
+</body>
+</html>

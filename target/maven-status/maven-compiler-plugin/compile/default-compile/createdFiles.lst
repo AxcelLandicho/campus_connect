@@ -1,0 +1,14 @@
+com/campusconnect/config/WebConfig.class
+com/campusconnect/repository/UserRepository.class
+com/campusconnect/repository/EventRepository.class
+com/campusconnect/repository/RSVPRepository.class
+com/campusconnect/controller/EventController.class
+com/campusconnect/controller/AuthController.class
+com/campusconnect/service/RsvpService.class
+com/campusconnect/dto/RsvpDto.class
+com/campusconnect/model/RSVP.class
+com/campusconnect/model/User.class
+com/campusconnect/service/UserService.class
+com/campusconnect/model/Event.class
+com/campusconnect/controller/RSVPController.class
+com/campusconnect/CampusConnectApplication.class

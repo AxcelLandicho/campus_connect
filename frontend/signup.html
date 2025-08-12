@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | CampusConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-100 via-blue-200 to-blue-300">
+    <div class="flex w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Left: Signup Form -->
+        <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-2xl font-bold text-blue-700">CampusConnect</span>
+        </div>
+                <p class="text-blue-600 mb-4">Sign up to get started with CampusConnect.</p>
+            </div>
+            <form class="space-y-5" method="POST" action="/api/signup">
+                <div>
+                    <label class="block text-blue-800 mb-1" for="name">Name</label>
+                    <input id="name" name="name" type="text" required class="w-full px-4 py-3 rounded-lg border border-blue-200 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Enter your name">
+                </div>
+                <div>
+                    <label class="block text-blue-800 mb-1" for="email">Email</label>
+                    <input id="email" name="email" type="email" required class="w-full px-4 py-3 rounded-lg border border-blue-200 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Enter your email">
+            </div>
+                <div>
+                    <label class="block text-blue-800 mb-1" for="password">Password</label>
+                    <input id="password" name="password" type="password" required class="w-full px-4 py-3 rounded-lg border border-blue-200 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Create a password">
+            </div>
+                <div>
+                    <label class="block text-blue-800 mb-1" for="confirm-password">Confirm Password</label>
+                    <input id="confirm-password" name="confirm-password" type="password" required class="w-full px-4 py-3 rounded-lg border border-blue-200 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Confirm your password">
+            </div>
+                <div>
+                    <span class="block text-blue-800 mb-2 font-semibold">Sign up as:</span>
+                    <div class="flex gap-6">
+                        <label class="flex items-center text-blue-700 font-medium">
+                            <input id="role-student" type="radio" name="role" value="student" class="form-radio text-blue-500 mr-2">
+                    Student
+                </label>
+                        <label class="flex items-center text-blue-700 font-medium">
+                            <input id="role-organizer" type="radio" name="role" value="organizer" class="form-radio text-blue-500 mr-2">
+                    Event Organizer
+                </label>
+            </div>
+                </div>
+                <div id="courseDropdown" class="mt-4 hidden">
+                    <label for="course" class="block text-gray-700 font-semibold mb-2">Course</label>
+                    <select id="course" name="course" class="w-full border rounded px-3 py-2" required>
+                        <option value="">Select your course</option>
+                        <option value="BS Chemical Engineering">BS Chemical Engineering</option>
+                        <option value="BS Civil Engineering">BS Civil Engineering</option>
+                        <option value="BS Computer Engineering">BS Computer Engineering</option>
+                        <option value="BS Electrical Engineering">BS Electrical Engineering</option>
+                        <option value="BS Electronics Engineering">BS Electronics Engineering</option>
+                        <option value="BS Food Engineering">BS Food Engineering</option>
+                        <option value="BS Industrial Engineering">BS Industrial Engineering</option>
+                        <option value="BS Instrumentation & Control Engineering">BS Instrumentation & Control Engineering</option>
+                        <option value="BS Mechanical Engineering">BS Mechanical Engineering</option>
+                        <option value="BS Mechatronics Engineering">BS Mechatronics Engineering</option>
+                        <option value="BS Petroleum Engineering">BS Petroleum Engineering</option>
+                        <option value="BS Sanitary Engineering">BS Sanitary Engineering</option>
+                        <option value="BS Automotive Engineering">BS Automotive Engineering</option>
+                        <option value="BS Aerospace Engineering">BS Aerospace Engineering</option>
+                        <option value="BS Transportation Engineering">BS Transportation Engineering</option>
+                        <option value="BS Biomedical Engineering">BS Biomedical Engineering</option>
+                        <option value="BS Geodetic Engineering">BS Geodetic Engineering</option>
+                        <option value="BS Geological Engineering">BS Geological Engineering</option>
+                        <option value="BS Ceramics Engineering">BS Ceramics Engineering</option>
+                        <option value="BS Metallurgical Engineering">BS Metallurgical Engineering</option>
+                        <option value="BS Naval Architecture and Marine Engineering">BS Naval Architecture and Marine Engineering</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-bold rounded-lg shadow-md hover:from-blue-500 hover:to-blue-700 transition">Sign Up</button>
+        </form>
+            <div class="mt-6 text-center text-blue-700">
+                Already have an account? <a href="./login.html" class="text-blue-500 hover:underline font-semibold">Login</a>
+            </div>
+        </div>
+        <!-- Right: Abstract Art & Text -->
+        <div class="hidden md:flex w-1/2 bg-gradient-to-tr from-blue-200 via-blue-300 to-blue-400 items-center justify-center relative">
+            <div class="absolute inset-0 opacity-60" style="background: radial-gradient(circle at 60% 40%, #fff3, transparent 70%), repeating-linear-gradient(135deg, #fff2 0 2px, transparent 2px 40px);"></div>
+            <div class="relative z-10 flex flex-col items-center justify-center p-10">
+                <h2 class="text-4xl font-extrabold text-blue-800 leading-tight drop-shadow-lg text-center" style="text-shadow: 0 2px 16px #0002;">Create<br>Your<br>Account.</h2>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const role = document.querySelector('input[name="role"]:checked').value;
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+    
+            let payload = { name, email, password, role };
+            if (role === 'student') {
+                payload.course = document.getElementById('course').value;
+                if (!payload.course) {
+                    alert('Please select your course.');
+                    return;
+            }
+        }
+
+            console.log(payload);
+    
+            const response = await fetch('http://localhost:5000/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+    
+            console.log('Response status:', response.status);
+    
+            const result = await response.json();
+            if (response.ok) {
+                localStorage.setItem('user', JSON.stringify({
+                    email: result.email,
+                    name: result.name,
+                    role: result.role,
+                    course: result.course
+                }));
+                if (result.role === 'student') {
+                    localStorage.setItem('studentId', result.email);
+                    localStorage.setItem('studentEmail', result.email);
+                    window.location.href = 'dashboard_student.html';
+                } else if (result.role === 'organizer') {
+                    localStorage.setItem('organizerId', result.email);
+                    window.location.href = 'dashboard_organizer.html';
+                }
+            } else {
+                alert(result.message || 'Signup failed. Please try again.');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const courseDropdown = document.getElementById('courseDropdown');
+        const studentRadio = document.getElementById('role-student');
+        const organizerRadio = document.getElementById('role-organizer');
+
+        function toggleCourseVisibility() {
+            const role = getSelectedRole();
+            if (role === 'student') {
+                courseDropdown.classList.remove('hidden');
+                document.getElementById('course').setAttribute('required', 'required');
+            } else {
+                courseDropdown.classList.add('hidden');
+                document.getElementById('course').removeAttribute('required');
+            }
+        }
+
+        function getSelectedRole() {
+            const roleElement = document.querySelector('input[name="role"]:checked');
+            return roleElement ? roleElement.value : null;
+        }
+
+        function validateStudentEmail(email) {
+            return email.endsWith("@g.batstate-u.edu.ph");
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const role = getSelectedRole();
+
+            if (!role) {
+                alert('Please select a role.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            if (role === 'student' && !validateStudentEmail(email)) {
+                alert('Student email must end with @g.batstate-u.edu.ph');
+                return;
+            }
+
+            let payload = { name, email, password, role };
+            if (role === 'student') {
+                const course = document.getElementById('course').value;
+                if (!course) {
+                    alert('Please select your course.');
+                    return;
+                }
+                payload.course = course;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5000/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    saveUserToLocalStorage(result);
+                    redirectToDashboard(result.role);
+                } else {
+                    alert(result.message || 'Signup failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error during signup:', error);
+                alert('Signup failed due to a network error.');
+            }
+        }
+
+        function saveUserToLocalStorage(user) {
+            localStorage.setItem('user', JSON.stringify({
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                course: user.course
+            }));
+        }
+
+        function redirectToDashboard(role) {
+            if (role === 'student') {
+                window.location.href = 'dashboard_student.html';
+            } else if (role === 'organizer') {
+                window.location.href = 'dashboard_organizer.html';
+            }
+        }
+
+        // Attach listeners
+        form.addEventListener('submit', submitForm);
+        studentRadio.addEventListener('change', toggleCourseVisibility);
+        organizerRadio.addEventListener('change', toggleCourseVisibility);
+
+        // Initialize state on page load
+        toggleCourseVisibility();
+    });
+    </script>
+</body>
+</html>
