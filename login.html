@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | CampusConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-100 via-blue-200 to-blue-300">
+    <div class="flex w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Left: Login Form -->
+        <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
+            <div class="mb-8">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-2xl font-bold text-blue-700">CampusConnect</span>
+                </div>
+                <p class="text-blue-600 mb-4">Login to your account to continue.</p>
+            </div>
+            <form class="space-y-5">
+                <div>
+                    <label class="block text-blue-800 mb-1" for="email">Email</label>
+                    <input id="email" name="email" type="email" required class="w-full px-4 py-3 rounded-lg border border-blue-200 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Enter your email">
+                </div>
+                <div>
+                    <label class="block text-blue-800 mb-1" for="password">Password</label>
+                    <input id="password" name="password" type="password" required class="w-full px-4 py-3 rounded-lg border border-blue-200 focus:ring-2 focus:ring-blue-400 outline-none" placeholder="Enter your password">
+                </div>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-blue-400 to-blue-600 text-white font-bold rounded-lg shadow-md hover:from-blue-500 hover:to-blue-700 transition">Login</button>
+            </form>
+            <div class="mt-6 text-center text-blue-700">
+                Don't have an account? <a href="./signup.html" class="text-blue-500 hover:underline font-semibold">Sign up</a>
+            </div>
+        </div>
+        <!-- Right: Abstract Art & Text -->
+        <div class="hidden md:flex w-1/2 bg-gradient-to-tr from-blue-200 via-blue-300 to-blue-400 items-center justify-center relative">
+            <div class="absolute inset-0 opacity-60" style="background: radial-gradient(circle at 60% 40%, #fff3, transparent 70%), repeating-linear-gradient(135deg, #fff2 0 2px, transparent 2px 40px);"></div>
+            <div class="relative z-10 flex flex-col items-center justify-center p-10">
+                <h2 class="text-4xl font-extrabold text-blue-800 leading-tight drop-shadow-lg text-center" style="text-shadow: 0 2px 16px #0002;">Welcome<br>Back!<br></h2>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.querySelector('form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        try {
+            console.log('Attempting login with email:', email);
+            const response = await fetch('http://localhost:5000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+            console.log('Login response:', result);
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Login failed');
+            }
+
+            if (!result.email || !result.role) {
+                console.error('Invalid response data:', result);
+                throw new Error('Invalid response from server');
+            }
+
+            // Store user data
+            const userData = {
+                email: result.email,
+                name: result.name,
+                role: result.role,
+                course: result.course
+            };
+            console.log('Storing user data:', userData);
+            localStorage.setItem('user', JSON.stringify(userData));
+
+            if (result.role === 'student') {
+                // Ensure both studentId and studentEmail are set
+                console.log('Setting student data:', { id: result.id || result.email, email: result.email });
+                localStorage.setItem('studentId', result.id || result.email);
+                localStorage.setItem('studentEmail', result.email);
+                
+                // Verify the data was stored
+                const storedEmail = localStorage.getItem('studentEmail');
+                const storedId = localStorage.getItem('studentId');
+                console.log('Stored student data:', { id: storedId, email: storedEmail });
+                
+                if (!storedEmail) {
+                    throw new Error('Failed to store student email');
+                }
+                
+                window.location.href = './dashboard_student.html';
+            } else if (result.role === 'organizer') {
+                window.location.href = './dashboard_organizer.html';
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert(error.message || 'Login failed. Please try again.');
+        }
+    });
+    </script>
+</body>
+</html>

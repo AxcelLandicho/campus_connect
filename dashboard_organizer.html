@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Organizer Dashboard | CampusConnect</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:400,600,700&display=swap">
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .tab-active { background-color: #e0f2fe; color: #2563eb; font-weight: 600; }
+    .tab-inactive { color: #64748b; }
+    tr {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    tr.opacity-0 {
+      opacity: 0;
+      transform: translateY(1rem);
+    }
+    tr.opacity-100 {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .profile-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px #93c5fd;
+      transform: scale(1.01);
+      transition: all 0.2s ease;
+    }
+    #profileInitials {
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-tr from-blue-100 via-blue-200 to-blue-300 min-h-screen">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-lg flex flex-col">
+      <div class="px-8 py-6 flex items-center gap-2 border-b">
+        <span class="text-2xl font-bold text-blue-700">CampusConnect</span>
+      </div>
+      <nav class="flex-1 flex flex-col py-6 gap-2">
+        <button class="tab-btn tab-active px-8 py-3 text-left rounded transition" data-tab="dashboard">Dashboard</button>
+        <button class="tab-btn tab-inactive px-8 py-3 text-left rounded transition" data-tab="calendar">Calendar</button>
+        <button class="tab-btn tab-inactive px-8 py-3 text-left rounded transition" data-tab="create">Create Event</button>
+        <button class="tab-btn tab-inactive px-8 py-3 text-left rounded transition" data-tab="manage">Manage Events</button>
+        <button class="tab-btn tab-inactive px-8 py-3 text-left rounded transition" data-tab="profile">Profile</button>
+      </nav>
+      <div class="px-8 py-6 border-t flex items-center justify-between">
+        <span class="text-gray-500 text-sm">Organizer</span>
+        <button onclick="logout()" class="text-red-500 hover:underline font-semibold">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8 bg-transparent">
+      <!-- Dashboard Tab -->
+      <section id="tab-dashboard" class="tab-content">
+        <!-- Hero Section -->
+        <div class="w-full bg-gradient-to-r from-blue-200 via-blue-100 to-blue-50 py-10 mb-8 shadow-md rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8 px-6">
+          <div>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-800 mb-2">Welcome, <span class="text-blue-600">Organizer</span>!</h1>
+            <p class="text-lg text-blue-700 mb-2">Manage, track, and celebrate your campus events with ease.</p>
+            <p class="text-md text-gray-600">Create, monitor, and analyze all your events in one beautiful dashboard.</p>
+          </div>
+          <div class="flex flex-col gap-4 items-center">
+            <div class="flex gap-6">
+              <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center min-w-[140px]">
+                <svg class="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7V6a3 3 0 013-3h12a3 3 0 013 3v1M3 7h18M3 7v11a3 3 0 003 3h12a3 3 0 003-3V7M16 11V9a4 4 0 00-8 0v2"></path></svg>
+                <span class="text-3xl font-bold text-blue-600" id="eventCount">0</span>
+                <span class="text-gray-600 mt-2">Total Events</span>
+              </div>
+              <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center min-w-[140px]">
+                <svg class="w-8 h-8 text-green-500 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-3xl font-bold text-green-600" id="upcomingCount">0</span>
+                <span class="text-gray-600 mt-2">Upcoming Events</span>
+              </div>
+              <div class="bg-white rounded-xl shadow p-6 flex flex-col items-center min-w-[140px]">
+                <svg class="w-8 h-8 text-purple-500 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-3xl font-bold text-purple-600" id="pastCount">0</span>
+                <span class="text-gray-600 mt-2">Past Events</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Ongoing Events Grid -->
+        <div class="mb-10">
+          <h2 class="text-2xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+            <svg class="w-7 h-7 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Ongoing Events
+          </h2>
+          <div id="ongoingEventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+          <div id="noOngoingEventsMsg" class="text-center text-gray-400 mt-4 hidden">No ongoing events at the moment.</div>
+        </div>
+      </section>
+
+      <!-- Calendar Tab -->
+      <section id="tab-calendar" class="tab-content hidden">
+        <h2 class="text-2xl font-semibold text-blue-700 mb-4" data-aos="fade-right">Event Calendar</h2>
+        <div id="calendarContainer" class="bg-white rounded-xl shadow p-6 min-h-[300px]" data-aos="zoom-in">
+          <iframe 
+            src="https://calendar.google.com/calendar/embed?src=YOUR_CALENDAR_ID&ctz=Asia%2FManila"
+            style="border: 0" 
+            width="100%" 
+            height="600" 
+            frameborder="0" 
+            scrolling="no"
+            class="rounded-xl shadow"
+          ></iframe>
+        </div>
+      </section>
+
+      <!-- Create Event Tab -->
+      <section id="tab-create" class="tab-content hidden">
+        <h2 class="text-2xl font-semibold text-blue-700 mb-4 text-center">Create New Event</h2>
+        <div class="flex justify-center">
+          <form id="createEventForm" class="bg-white rounded-2xl shadow-lg p-10 max-w-2xl w-full space-y-6" data-aos="zoom-in">
+            <div>
+              <label class="block text-blue-800 font-semibold mb-1" for="eventName">Event Name</label>
+              <input id="eventName" type="text" class="w-full border border-blue-200 p-3 rounded focus:ring-2 focus:ring-blue-400" required>
+            </div>
+            <div>
+              <label class="block text-blue-800 font-semibold mb-1" for="eventDescription">Description</label>
+              <textarea id="eventDescription" class="w-full border border-blue-200 p-3 rounded focus:ring-2 focus:ring-blue-400" rows="3" required></textarea>
+            </div>
+            <div>
+              <label class="block text-blue-800 font-semibold mb-1" for="eventOrganization">Organization</label>
+              <select id="eventOrganization" class="w-full border border-blue-200 p-3 rounded focus:ring-2 focus:ring-blue-400" required>
+                <option value="">Select Course</option>
+                <option value="All Engineering Courses">All Engineering Courses</option>
+                <option value="BS Chemical Engineering">BS Chemical Engineering</option>
+                <option value="BS Civil Engineering">BS Civil Engineering</option>
+                <option value="BS Computer Engineering">BS Computer Engineering</option>
+                <option value="BS Electrical Engineering">BS Electrical Engineering</option>
+                <option value="BS Electronics Engineering">BS Electronics Engineering</option>
+                <option value="BS Food Engineering">BS Food Engineering</option>
+                <option value="BS Industrial Engineering">BS Industrial Engineering</option>
+                <option value="BS Instrumentation & Control Engineering">BS Instrumentation & Control Engineering</option>
+                <option value="BS Mechanical Engineering">BS Mechanical Engineering</option>
+                <option value="BS Mechatronics Engineering">BS Mechatronics Engineering</option>
+                <option value="BS Petroleum Engineering">BS Petroleum Engineering</option>
+                <option value="BS Sanitary Engineering">BS Sanitary Engineering</option>
+                <option value="BS Automotive Engineering">BS Automotive Engineering</option>
+                <option value="BS Aerospace Engineering">BS Aerospace Engineering</option>
+                <option value="BS Transportation Engineering">BS Transportation Engineering</option>
+                <option value="BS Biomedical Engineering">BS Biomedical Engineering</option>
+                <option value="BS Geodetic Engineering">BS Geodetic Engineering</option>
+                <option value="BS Geological Engineering">BS Geological Engineering</option>
+                <option value="BS Ceramics Engineering">BS Ceramics Engineering</option>
+                <option value="BS Metallurgical Engineering">BS Metallurgical Engineering</option>
+                <option value="BS Naval Architecture and Marine Engineering">BS Naval Architecture and Marine Engineering</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-blue-800 font-semibold mb-1" for="eventVenue">Venue</label>
+              <input id="eventVenue" type="text" class="w-full border border-blue-200 p-3 rounded focus:ring-2 focus:ring-blue-400" required>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex-1">
+                <label class="block text-blue-800 font-semibold mb-1" for="eventDate">Date</label>
+                <input id="eventDate" type="date" class="w-full border border-blue-200 p-3 rounded focus:ring-2 focus:ring-blue-400" required>
+              </div>
+              <div class="flex-1">
+                <label class="block text-blue-800 font-semibold mb-1" for="eventStartTime">Time Start</label>
+                <input
+                  id="eventStartTime"
+                  type="time"
+                  class="w-full border border-blue-200 p-3 rounded focus:ring-2 focus:ring-blue-400"
+                  placeholder="HH:MM"
+                  pattern="[0-9]{2}:[0-9]{2}"
+                  required
+                >
+              </div>
+              <div class="flex-1">
+                <label class="block text-blue-800 font-semibold mb-1" for="eventEndTime">Time End</label>
+                <input id="eventEndTime" type="time" class="w-full border border-blue-200 p-3 rounded focus:ring-2 focus:ring-blue-400" required>
+              </div>
+            </div>
+            <div id="eventCreateSpinner" class="hidden flex justify-center items-center">
+              <svg class="animate-spin h-6 w-6 text-blue-500" ...></svg>
+            </div>
+            <div id="eventCreateCheck" class="hidden flex justify-center items-center">
+              <svg class="h-8 w-8 text-green-500" ...></svg>
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-8 py-3 rounded font-semibold transition w-full text-lg">Create Event</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Manage Events Tab -->
+      <section id="tab-manage" class="tab-content hidden">
+        <h2 class="text-2xl font-semibold text-blue-800 mb-4">Manage Events</h2>
+        <div class="flex justify-end mb-4">
+          <button id="exportRsvpBtn" class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold">Export RSVP List</button>
+        </div>
+        <!-- Filter Tabs -->
+        <div class="flex gap-2 mb-6">
+          <button class="filter-btn active bg-blue-500 text-white px-4 py-2 rounded font-semibold transition" data-filter="all">All</button>
+          <button class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded font-semibold transition" data-filter="upcoming">Upcoming</button>
+          <button class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded font-semibold transition" data-filter="ongoing">Ongoing</button>
+          <button class="filter-btn bg-gray-200 text-gray-700 px-4 py-2 rounded font-semibold transition" data-filter="past">Past</button>
+        </div>
+        <!-- Table -->
+        <div class="bg-white rounded-xl shadow overflow-x-auto max-w-full" style="min-width:320px;">
+          <table class="min-w-[700px] max-w-full w-full">
+            <thead class="bg-blue-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider cursor-pointer sort-btn" data-sort="name">Event Name</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider cursor-pointer sort-btn" data-sort="date">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider cursor-pointer sort-btn" data-sort="venue">Venue</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider cursor-pointer sort-btn" data-sort="organization">Organization</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider cursor-pointer sort-btn" data-sort="status">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider">RSVPs</th>
+                <th class="px-6 py-3 text-left text-xs font-semibold text-blue-800 uppercase tracking-wider"> </th>
+              </tr>
+            </thead>
+            <tbody id="eventTableBody" class="divide-y divide-blue-100">
+              <!-- Event rows will be inserted here by JavaScript -->
+            </tbody>
+          </table>
+          <!-- Pagination Controls -->
+          <div id="paginationControls" class="flex flex-wrap justify-center items-center gap-2 py-4 bg-white"></div>
+        </div>
+        <!-- No Events Message -->
+        <div id="noEventsMsg" class="text-center text-gray-400 mt-4 hidden">No events created yet.</div>
+      </section>
+
+      <!-- Profile Tab -->
+      <section id="tab-profile" class="tab-content hidden">
+        <h2 class="text-2xl font-semibold text-blue-800 mb-6">User Profile</h2>
+        <div class="max-w-2xl mx-auto">
+          <div class="bg-white rounded-xl shadow-lg p-8" data-aos="fade-up">
+            <!-- Profile Header -->
+            <div class="flex items-center gap-6 mb-8">
+              <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center relative overflow-hidden group">
+                <img id="profilePic" src="https://ui-avatars.com/api/?name=OO&background=bfdbfe&color=2563eb&size=128" alt="Profile" class="object-cover w-full h-full" />
+                <span id="profileInitials" class="absolute inset-0 flex items-center justify-center text-3xl text-blue-600 font-bold pointer-events-none" style="display:none;">OO</span>
+              </div>
+              <div>
+                <h3 class="text-xl font-semibold text-gray-800" id="profileName">Organizer Name</h3>
+                <p class="text-gray-600" id="profileEmail">organizer@email.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-6 right-6 z-50 hidden px-6 py-3 rounded shadow-lg text-white font-semibold"></div>
+
+  <!-- Edit Event Modal (Guaranteed Working) -->
+  <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8 text-center relative w-96">
+      <h2 class="text-2xl font-bold mb-4 text-blue-800">Edit Event</h2>
+      <form id="editEventForm" class="space-y-4">
+        <input type="hidden" id="editEventId">
+        <input type="text" id="editEventName" placeholder="Event Name" class="border border-blue-200 p-3 rounded w-full focus:ring-2 focus:ring-blue-400" required>
+        <input type="date" id="editEventDate" class="border border-blue-200 p-3 rounded w-full focus:ring-2 focus:ring-blue-400" required>
+        <input type="time" id="editEventStartTime" class="border border-blue-200 p-3 rounded w-full focus:ring-2 focus:ring-blue-400" required>
+        <input type="time" id="editEventEndTime" class="border border-blue-200 p-3 rounded w-full focus:ring-2 focus:ring-blue-400" required>
+        <input type="text" id="editEventVenue" placeholder="Venue" class="border border-blue-200 p-3 rounded w-full focus:ring-2 focus:ring-blue-400" required>
+        <input type="text" id="editEventOrganization" placeholder="Organization" class="border border-blue-200 p-3 rounded w-full focus:ring-2 focus:ring-blue-400" required>
+        <textarea id="editEventDescription" placeholder="Event Description" class="border border-blue-200 p-3 rounded w-full focus:ring-2 focus:ring-blue-400" required></textarea>
+        <div class="flex gap-2 justify-end mt-4">
+          <button type="button" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-2 rounded font-semibold transition" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-6 py-2 rounded font-semibold transition">Save Changes</button>
+        </div>
+      </form>
+    </div>
+    </div>
+
+  <!-- Event Details Modal -->
+  <div id="eventDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-[1000px] max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-blue-800" id="modalEventName">Event Name</h2>
+        <button onclick="closeEventDetailsModal()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+    </div>
+
+      <div class="grid grid-cols-2 gap-6 mb-6">
+        <div class="bg-blue-50 p-4 rounded-lg">
+          <h3 class="font-semibold text-blue-800 mb-2">Event Details</h3>
+          <p class="text-gray-600" id="modalEventDate"></p>
+          <p class="text-gray-600" id="modalEventTime"></p>
+          <p class="text-gray-600" id="modalEventVenue"></p>
+          <p class="text-gray-600" id="modalEventOrg"></p>
+        </div>
+        <div class="bg-green-50 p-4 rounded-lg">
+          <h3 class="font-semibold text-green-800 mb-2">Attendance Stats</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm text-gray-600">Total RSVPs</p>
+              <p class="text-2xl font-bold text-green-600" id="modalTotalRSVPs">0</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">Total Attendees</p>
+              <p class="text-2xl font-bold text-blue-600" id="modalTotalAttendees">0</p>
+            </div>
+          </div>
+      </div>
+    </div>
+    
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Attendees List Section -->
+        <div class="bg-white border rounded-lg p-4 w-full">
+          <h3 class="font-semibold text-blue-800 mb-4">RSVP List</h3>
+          <div id="attendeeList" class="max-h-[600px] min-h-[200px] overflow-y-auto">
+            <table class="min-w-full divide-y divide-blue-100">
+              <thead>
+                <tr>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-blue-800 uppercase">Student Email</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-blue-800 uppercase">RSVP Status</th>
+                  <th class="px-4 py-2 text-left text-xs font-semibold text-blue-800 uppercase">Attendance</th>
+                </tr>
+              </thead>
+              <tbody id="attendeeTableBody" class="divide-y divide-blue-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4 justify-center">
+        <button id="editEventBtn" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Edit</button>
+        <button id="editRsvpListBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold">Edit RSVP List</button>
+        <button id="deleteEventBtn" class="bg-red-500 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold">Delete</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add RSVP Edit Modal -->
+  <div id="editRsvpModal" class="fixed inset-0 flex items-center justify-center z-50 hidden modal-bg">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md relative">
+      <button onclick="closeEditRsvpModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      <h2 class="text-xl font-bold text-blue-800 mb-4">Edit RSVP</h2>
+      <form id="editRsvpForm" class="space-y-4">
+        <div>
+          <label class="block text-blue-800 font-semibold mb-1">Student Email</label>
+          <div id="editRsvpEmail" class="text-gray-700 font-semibold"></div>
+        </div>
+        <div>
+          <label class="block text-blue-800 font-semibold mb-1">RSVP Status</label>
+          <select id="editRsvpStatus" class="w-full border border-blue-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-400">
+            <option value="attending">Attending</option>
+            <option value="not_attending">Not Attending</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-blue-800 font-semibold mb-1">Attendance</label>
+          <select id="editRsvpPresent" class="w-full border border-blue-200 rounded px-3 py-2 focus:ring-2 focus:ring-blue-400">
+            <option value="present">Present</option>
+            <option value="absent">Absent</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeEditRsvpModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded font-semibold">Cancel</button>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Edit RSVP List Modal -->
+  <div id="editRsvpListModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-[600px] max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-blue-800">Edit RSVP List</h2>
+        <button onclick="closeEditRsvpListModal()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="editRsvpListBody"></div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-[500px] max-w-2xl">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-blue-800">Export RSVP List</h2>
+        <button onclick="closeExportModal()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-blue-800 font-semibold mb-2">Select Event</label>
+          <select id="exportEventSelect" class="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400">
+            <option value="">Select an event</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+          <button onclick="closeExportModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded font-semibold">Cancel</button>
+          <button onclick="exportSelectedEvent()" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Export</button>
+          <button onclick="exportSelectedEventPdf()" class="bg-purple-500 hover:bg-purple-700 text-white px-4 py-2 rounded font-semibold">Export PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdfExportContainer" style="display:none"></div>
+
+  <script>
+    // Tab switching logic
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        this.classList.add('tab-active');
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+        document.getElementById('tab-' + this.dataset.tab).classList.remove('hidden');
+        if (this.dataset.tab === 'dashboard') renderDashboardStats();
+        if (this.dataset.tab === 'manage') renderEventTable();
+        if (this.dataset.tab === 'profile') {
+          loadProfileFromLocalStorage();
+          loadUserProfile();
+        }
+        if (this.dataset.tab === 'attendees') {
+          populateEventSelect();
+        }
+      });
+    });
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = './login.html';
+    }
+
+    // Store events globally
+    let events = [];
+
+    // Fetch events and store them
+    async function fetchEvents(page = 1, pageSize = 20) {
+      try {
+        const res = await fetch(`http://localhost:5000/api/events?page=${page}&size=${pageSize}`);
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Failed to fetch events');
+        }
+        events = await res.json();
+        // Fetch RSVP counts for each event
+        await Promise.all(events.map(async (event) => {
+          const rsvpRes = await fetch(`http://localhost:5000/api/events/${event.id}/rsvps`);
+          if (rsvpRes.ok) {
+            const rsvps = await rsvpRes.json();
+            event.rsvpCount = rsvps.length;
+          } else {
+            event.rsvpCount = 0;
+          }
+        }));
+        renderEventTable();
+        populateEventSelect();
+      } catch (error) {
+        showToast(error.message, 'error');
+        events = [];
+        renderEventTable();
+        populateEventSelect();
+      }
+    }
+
+    // Utility to check if event is ongoing
+    function isOngoingEvent(event) {
+      const now = new Date();
+      const start = new Date(`${event.date}T${event.startTime}`);
+      const end = getEventEndDate(event.date, event.startTime, event.endTime);
+      return now >= start && now <= end;
+    }
+
+    function isPastEvent(event) {
+      const end = getEventEndDate(event.date, event.startTime, event.endTime);
+      return end < new Date();
+    }
+
+    // Render event table with filtering
+    function renderEventTable(filter = 'all', page = 1, pageSize = 10) {
+      const tableBody = document.getElementById('eventTableBody');
+      const noEventsMsg = document.getElementById('noEventsMsg');
+      tableBody.innerHTML = '';
+
+      // Filter events based on status
+      let filteredEvents = events;
+      if (filter === 'upcoming') {
+        const now = new Date();
+        filteredEvents = events.filter(event => {
+          const start = new Date(`${event.date}T${event.startTime}`);
+          return start > now;
+        });
+      } else if (filter === 'past') {
+        filteredEvents = events.filter(event => isPastEvent(event));
+      } else if (filter === 'ongoing') {
+        const now = new Date();
+        filteredEvents = events.filter(event => {
+          const start = new Date(`${event.date}T${event.startTime}`);
+          const end = new Date(`${event.date}T${event.endTime}`);
+          return start <= now && now <= end;
+        });
+      }
+      // Always sort by soonest date/time first
+      filteredEvents = filteredEvents.sort((a, b) => {
+        const aStart = new Date(`${a.date}T${a.startTime}`);
+        const bStart = new Date(`${b.date}T${b.startTime}`);
+        return aStart - bStart;
+      });
+
+      // Pagination logic
+      const totalPages = Math.ceil(filteredEvents.length / pageSize);
+      const paginatedEvents = filteredEvents.slice((page - 1) * pageSize, page * pageSize);
+
+      if (paginatedEvents.length === 0) {
+        noEventsMsg.classList.remove('hidden');
+      } else {
+        noEventsMsg.classList.add('hidden');
+        paginatedEvents.forEach((event, index) => {
+          const row = document.createElement('tr');
+          row.className = "hover:bg-blue-50 transition cursor-pointer opacity-0 translate-y-4";
+          row.setAttribute('data-id', event.id);
+          
+          // Add animation delay based on index
+          setTimeout(() => {
+            row.classList.remove('opacity-0', 'translate-y-4');
+            row.classList.add('opacity-100', 'translate-y-0');
+          }, 50 * index);
+
+          let status = '';
+          if (isPastEvent(event)) {
+            status = 'Past';
+          } else if (isOngoingEvent(event)) {
+            status = 'Ongoing';
+          } else {
+            status = 'Upcoming';
+          }
+
+          row.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-800">${event.name}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.date} | ${event.startTime} - ${event.endTime}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.venue}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${event.organization}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold ${status === 'Upcoming' ? 'bg-green-100 text-green-800' : status === 'Ongoing' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}">${status}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">${event.rsvpCount || 0}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+              <button class="bg-blue-500 hover:bg-blue-700 text-white px-3 py-1 rounded font-semibold text-xs show-details-btn" data-event-id="${event.id}">Show Details</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      }
+      // Render pagination controls
+      renderPaginationControls(totalPages, page, filter);
+
+      // After rendering the table, add event listeners to all Show Details buttons
+      setTimeout(() => {
+        document.querySelectorAll('.show-details-btn').forEach(btn => {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const eventId = this.getAttribute('data-event-id');
+            const eventObj = events.find(e => String(e.id) === String(eventId));
+            if (eventObj) showEventDetails(eventObj);
+            else showToast('Event not found.', 'error');
+          });
+        });
+        // Attach export button handler
+        const exportBtn = document.getElementById('exportRsvpBtn');
+        if (exportBtn) {
+          exportBtn.onclick = function() {
+            openExportModal();
+          };
+        }
+      }, 0);
+    }
+
+    function renderPaginationControls(totalPages, currentPage, filter) {
+      const container = document.getElementById('paginationControls');
+      container.innerHTML = '';
+      if (totalPages <= 1) return;
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = `px-3 py-1 rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200 text-blue-700'} font-semibold`;
+        btn.onclick = () => renderEventTable(filter, i);
+        container.appendChild(btn);
+      }
+    }
+
+    // Filter button click handlers
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update button styles
+        document.querySelectorAll('.filter-btn').forEach(b => {
+          b.classList.remove('bg-blue-500', 'text-white');
+          b.classList.add('bg-gray-200', 'text-gray-700');
+        });
+        this.classList.remove('bg-gray-200', 'text-gray-700');
+        this.classList.add('bg-blue-500', 'text-white');
+        
+        // Render table with filter
+        renderEventTable(this.dataset.filter);
+      });
+    });
+
+    // Sort functionality
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const sortBy = this.dataset.sort;
+        events.sort((a, b) => {
+          if (sortBy === 'name') return a.name.localeCompare(b.name);
+          if (sortBy === 'date') return new Date(a.date) - new Date(b.date);
+          if (sortBy === 'venue') return a.venue.localeCompare(b.venue);
+          if (sortBy === 'status') return isPastEvent(a) - isPastEvent(b);
+        });
+        renderEventTable();
+      });
+    });
+
+    // Update create event handler to refresh table
+    document.getElementById('createEventForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = document.getElementById('eventName').value.trim();
+      const date = document.getElementById('eventDate').value;
+      const startTime = document.getElementById('eventStartTime').value;
+      const endTime = document.getElementById('eventEndTime').value;
+      const venue = document.getElementById('eventVenue').value.trim();
+      const description = document.getElementById('eventDescription').value.trim();
+      const organization = document.getElementById('eventOrganization').value.trim();
+
+      if (!name || !date || !startTime || !endTime || !venue || !description || !organization) {
+        showToast('Please fill in all fields.', 'error');
+        return;
+      }
+
+      document.getElementById('eventCreateSpinner').classList.remove('hidden');
+      try {
+        const res = await fetch('http://127.0.0.1:5000/api/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, date, startTime, endTime, venue, description, organization })
+        });
+        document.getElementById('eventCreateSpinner').classList.add('hidden');
+        if (res.ok) {
+          try {
+            document.getElementById('eventCreateCheck').classList.remove('hidden');
+            setTimeout(() => {
+              document.getElementById('eventCreateCheck').classList.add('hidden');
+            }, 1200);
+            if (typeof this.reset === 'function') this.reset();
+            showToast('Event created successfully!', 'success');
+            // Refresh the events list and table
+            if (typeof fetchEvents === 'function') await fetchEvents();
+            // Switch to the manage tab to show the new event
+            const manageTabBtn = document.querySelector('[data-tab="manage"]');
+            if (manageTabBtn) manageTabBtn.click();
+            if (typeof loadEvents === 'function') await loadEvents();
+          } catch (uiError) {
+            console.error('UI error after event creation:', uiError);
+            showToast('Event created successfully! (UI update incomplete)', 'success');
+          }
+        } else {
+          const error = await res.json().catch(() => ({}));
+          console.error('Event creation backend error:', error);
+          showToast(error.error || error.message || 'Failed to create event.', 'error');
+        }
+      } catch (error) {
+        document.getElementById('eventCreateSpinner').classList.add('hidden');
+        showToast('Error creating event.', 'error');
+      }
+    });
+
+    function getEventEndDate(date, startTime, endTime) {
+      const start = new Date(`${date}T${startTime}`);
+      let end = new Date(`${date}T${endTime}`);
+      if (end <= start) {
+        end.setDate(end.getDate() + 1);
+      }
+      return end;
+    }
+
+    async function renderDashboardStats() {
+      const now = new Date();
+      let upcoming = 0, past = 0;
+      events.forEach(event => {
+        const start = new Date(`${event.date}T${event.startTime}`);
+        const end = getEventEndDate(event.date, event.startTime, event.endTime);
+        if (end < now) past++; else if (start > now) upcoming++;
+      });
+      document.getElementById('eventCount').textContent = events.length;
+      document.getElementById('upcomingCount').textContent = upcoming;
+      document.getElementById('pastCount').textContent = past;
+      renderOngoingEvents();
+    }
+
+    // Render Ongoing Events Grid
+    function renderOngoingEvents() {
+      const grid = document.getElementById('ongoingEventsGrid');
+      const noneMsg = document.getElementById('noOngoingEventsMsg');
+      grid.innerHTML = '';
+      const now = new Date();
+      const ongoing = events.filter(event => {
+        const start = new Date(`${event.date}T${event.startTime}`);
+        const end = getEventEndDate(event.date, event.startTime, event.endTime);
+        return now >= start && now <= end;
+      });
+      if (!ongoing.length) {
+        noneMsg.classList.remove('hidden');
+        return;
+      } else {
+        noneMsg.classList.add('hidden');
+      }
+      ongoing.forEach(event => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl shadow-lg p-6 flex flex-col gap-2 border-l-4 border-yellow-400';
+        card.innerHTML = `
+          <div class="flex items-center gap-2 mb-2">
+            <span class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">Ongoing</span>
+            <span class="text-sm text-gray-400 ml-auto">${event.date} | ${event.startTime} - ${event.endTime}</span>
+          </div>
+          <h3 class="text-xl font-bold text-blue-800 mb-1">${event.name}</h3>
+          <p class="text-gray-600 mb-1">${event.venue}</p>
+          <p class="text-gray-500 text-sm">${event.organization}</p>
+          <p class="text-gray-500 text-xs mt-2">${event.description || ''}</p>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Edit Event Logic
+    function editEvent(eventId) {
+      // Find the event by ID
+      const event = events.find(e => String(e.id) === String(eventId));
+      if (!event) {
+        showToast('Event not found.', 'error');
+        return;
+      }
+      // Populate modal fields
+      document.getElementById('editEventId').value = event.id;
+      document.getElementById('editEventName').value = event.name;
+      document.getElementById('editEventDate').value = event.date;
+      document.getElementById('editEventStartTime').value = event.startTime;
+      document.getElementById('editEventEndTime').value = event.endTime;
+      document.getElementById('editEventVenue').value = event.venue;
+      document.getElementById('editEventOrganization').value = event.organization;
+      document.getElementById('editEventDescription').value = event.description;
+      // Show the modal
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    document.getElementById('editEventForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('editEventId').value;
+      const name = document.getElementById('editEventName').value.trim();
+      const date = document.getElementById('editEventDate').value;
+      const startTime = document.getElementById('editEventStartTime').value;
+      const endTime = document.getElementById('editEventEndTime').value;
+      const venue = document.getElementById('editEventVenue').value.trim();
+      const organization = document.getElementById('editEventOrganization').value.trim();
+      const description = document.getElementById('editEventDescription').value.trim();
+
+      if (!name || !date || !startTime || !endTime || !venue || !organization || !description) {
+        showToast('Please fill in all fields.', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/api/events/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, date, startTime, endTime, venue, organization, description })
+        });
+        if (res.ok) {
+          const updatedEvent = await res.json();
+          // Update the event in the local array
+          const idx = events.findIndex(e => String(e.id) === String(id));
+          if (idx !== -1) events[idx] = updatedEvent;
+          renderDashboardStats();
+          renderEventTable();
+          showToast('Event updated successfully!');
+          closeEditModal();
+        } else {
+          showToast('Failed to update event.', 'error');
+        }
+      } catch (err) {
+        showToast('Error updating event.', 'error');
+      }
+    };
+
+    // Delete Event
+    async function deleteEvent(eventId) {
+      if (!confirm('Are you sure you want to delete this event?')) return;
+      
+      try {
+        const res = await fetch(`http://127.0.0.1:5000/api/events/${eventId}`, {
+          method: 'DELETE'
+        });
+        
+        if (res.ok) {
+          // Remove the event from the local events array
+          events = events.filter(event => event.id !== eventId);
+          
+          // Update the UI
+          renderDashboardStats();
+          renderEventTable();
+          showToast('Event deleted successfully!');
+          
+          // If the event details modal is open for this event, close it
+          if (currentEventId === eventId) {
+            closeEventDetailsModal();
+          }
+        } else {
+          showToast('Failed to delete event.', 'error');
+        }
+      } catch (error) {
+        showToast('Error deleting event.', 'error');
+      }
+    }
+
+    // Toast logic
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `fixed top-6 right-6 z-50 px-6 py-3 rounded shadow-lg text-white font-semibold ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    // Initialize
+    fetchEvents();
+    renderDashboardStats();
+
+    AOS.init({ duration: 700, once: true });
+
+    let html5QrCode;
+    let currentEventId = null;
+
+    async function showEventDetails(event) {
+      try {
+        // Update modal content
+        document.getElementById('modalEventName').textContent = event.name;
+        document.getElementById('modalEventDate').textContent = `Date: ${event.date}`;
+        document.getElementById('modalEventTime').textContent = `Time: ${event.startTime} - ${event.endTime}`;
+        document.getElementById('modalEventVenue').textContent = `Venue: ${event.venue}`;
+        document.getElementById('modalEventOrg').textContent = `Organization: ${event.organization}`;
+
+        // Fetch and update attendees
+        const res = await fetch(`http://localhost:5000/api/events/${event.id}/rsvps`);
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Failed to load attendees');
+        }
+        const attendees = await res.json();
+        
+        document.getElementById('modalTotalRSVPs').textContent = attendees.length;
+        document.getElementById('modalTotalAttendees').textContent = attendees.filter(a => a.attended).length;
+        
+        const tableBody = document.getElementById('attendeeTableBody');
+        tableBody.innerHTML = '';
+        
+        attendees.forEach(attendee => {
+          let email = attendee.studentEmail || attendee.email || (attendee.student && attendee.student.email) || '';
+          if (!email && attendee.student_id) {
+            if (/^\\d{2}-\\d{5}$/.test(attendee.student_id)) {
+              email = attendee.student_id + '@g.batstate-u.edu.ph';
+            } else {
+              email = attendee.student_id;
+            }
+          }
+          if (!email) email = '';
+          const rsvpStatus = attendee.attended ? 'Will Attend' : 'Will Not Attend';
+
+          // Attendance color coding and toggle
+          const attendance = attendee.present ? 'Present' : 'Absent';
+          const attendanceClass = attendee.present
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td class="px-4 py-2 text-sm text-gray-700">${email}</td>
+            <td class="px-4 py-2 text-sm">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold ${attendee.attended ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                ${rsvpStatus}
+              </span>
+            </td>
+            <td class="px-4 py-2 text-sm">
+              <button class="attendance-toggle-btn px-3 py-1 rounded font-semibold text-xs ${attendanceClass}" data-id="${attendee.id}">
+                ${attendance}
+              </button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        // Add event listeners for attendance toggle buttons
+        tableBody.querySelectorAll('.attendance-toggle-btn').forEach(btn => {
+          btn.onclick = async function() {
+            const rsvpId = this.getAttribute('data-id');
+            const isCurrentlyPresent = this.textContent.trim() === 'Present';
+            const newStatus = !isCurrentlyPresent;
+            try {
+              const res = await fetch(`http://localhost:5000/api/events/${event.id}/rsvps/${rsvpId}/attendance`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ present: newStatus })
+              });
+              if (res.ok) {
+                showToast('Attendance updated successfully!');
+                await showEventDetails(event); // Refresh the modal
+                // Optionally: trigger a refresh on the student dashboard
+              } else {
+                showToast('Failed to update attendance.', 'error');
+              }
+            } catch (err) {
+              showToast('Error updating attendance.', 'error');
+            }
+          };
+        });
+
+        // Show modal
+        document.getElementById('eventDetailsModal').classList.remove('hidden');
+        currentEventId = event.id;
+
+        const editBtn = document.getElementById('editEventBtn');
+        const editRsvpListBtn = document.getElementById('editRsvpListBtn');
+        const deleteBtn = document.getElementById('deleteEventBtn');
+        const isPast = isPastEvent(event);
+        const isOngoing = isOngoingEvent(event);
+        const isUpcoming = !isPast && !isOngoing;
+        if (isPast) {
+          editBtn.style.display = 'none';
+          editRsvpListBtn.style.display = 'none';
+        } else if (isOngoing) {
+          editBtn.style.display = 'none';
+          editRsvpListBtn.style.display = '';
+        } else if (isUpcoming) {
+          editBtn.style.display = '';
+          editRsvpListBtn.style.display = '';
+        }
+        // Always attach handlers for the current event
+        editBtn.onclick = function(e) {
+          e.stopPropagation();
+          closeEventDetailsModal();
+          editEvent(event.id);
+        };
+        editRsvpListBtn.onclick = async function(e) {
+          e.stopPropagation();
+          await openEditRsvpListModal(event.id);
+        };
+        deleteBtn.onclick = async function(e) {
+          e.stopPropagation();
+          if (confirm('Are you sure you want to delete this event?')) {
+            await deleteEvent(event.id);
+            closeEventDetailsModal();
+          }
+        };
+      } catch (error) {
+        showToast(error.message, 'error');
+      }
+    }
+
+    // Update closeEventDetailsModal to always stop and clear the scanner
+    async function closeEventDetailsModal() {
+      document.getElementById('eventDetailsModal').classList.add('hidden');
+      currentEventId = null;
+    }
+
+    // Function to get user initials
+    function getUserInitials(name) {
+      return name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+    }
+
+    // Function to load user profile
+    async function loadUserProfile() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || !user.email) return;
+      fetch(`http://127.0.0.1:5000/api/user/profile?email=${encodeURIComponent(user.email)}`)
+          .then(res => res.json())
+          .then(data => {
+              if (data.email) {
+                  document.getElementById('profileName').textContent = data.name;
+                  document.getElementById('profileEmail').textContent = data.email;
+                  document.getElementById('profileInitials').textContent = getUserInitials(data.name);
+              }
+          });
+    }
+
+    localStorage.setItem('organizerId', result.id || result.email);
+
+    function showProfile() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileRole').textContent = user.role;
+        }
+        document.getElementById('profileTab').style.display = 'block';
+        document.getElementById('eventsTab').style.display = 'none';
+        document.getElementById('createEventTab').style.display = 'none';
+    }
+
+    function loadProfileFromLocalStorage() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) {
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profileInitials').textContent = getUserInitials(user.name);
+        }
+    }
+
+    window.showEventDetails = showEventDetails;
+
+    // Add new variables for attendees management
+    let currentEventRsvps = [];
+    let currentEvent = null;
+    let editingRsvpId = null;
+
+    // Add new functions for attendees management
+    async function loadEventRsvps(eventId) {
+      document.getElementById('attendeesLoading').classList.remove('hidden');
+      try {
+        console.log('Loading RSVPs for event:', eventId); // Debug log
+        
+        // Fetch event details
+        const eventRes = await fetch(`http://localhost:5000/api/events/${eventId}`);
+        if (!eventRes.ok) {
+          const error = await eventRes.json();
+          throw new Error(error.error || 'Failed to load event');
+        }
+        currentEvent = await eventRes.json();
+        console.log('Event details:', currentEvent); // Debug log
+
+        // Fetch RSVPs for the event
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}/rsvps`);
+        if (!res.ok) {
+          const error = await res.json();
+          throw new Error(error.error || 'Failed to load attendees');
+        }
+        const rsvps = await res.json();
+        console.log('Raw RSVP data:', rsvps); // Debug log
+
+        // Process RSVPs to ensure we have all required fields
+        currentEventRsvps = rsvps.map(rsvp => {
+          const processed = {
+            id: rsvp.id,
+            studentEmail: rsvp.studentEmail || rsvp.email || rsvp.student_id || (rsvp.student && rsvp.student.email) || 'N/A',
+            course: rsvp.course || (rsvp.student && rsvp.student.course) || 'N/A',
+            attended: rsvp.attended || false,
+            present: rsvp.present || false
+          };
+          console.log('Processed RSVP:', processed); // Debug log
+          return processed;
+        });
+
+        // Update stats and render the table
+        updateAttendeeStats();
+        renderAttendees();
+      } catch (error) {
+        console.error('Error in loadEventRsvps:', error);
+        showToast(error.message, 'error');
+        currentEventRsvps = [];
+        renderAttendees();
+      } finally {
+        document.getElementById('attendeesLoading').classList.add('hidden');
+      }
+    }
+
+    function updateAttendeeStats() {
+      const total = currentEventRsvps.length;
+      const attending = currentEventRsvps.filter(r => r.attended).length;
+      const notAttending = total - attending;
+
+      document.getElementById('totalRsvps').textContent = total;
+      document.getElementById('attendingCount').textContent = attending;
+      document.getElementById('notAttendingCount').textContent = notAttending;
+    }
+
+    function renderAttendees() {
+      console.log('Rendering attendees with data:', currentEventRsvps); // Debug log
+      const tbody = document.getElementById('attendeesTableBody');
+      const noneMsg = document.getElementById('noAttendeesMsg');
+      const search = document.getElementById('searchAttendee').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+      
+      // Filter RSVPs based on search and status
+      let filtered = currentEventRsvps;
+      if (search) {
+        filtered = filtered.filter(r => 
+          (r.studentEmail || '').toLowerCase().includes(search) || 
+          (r.course || '').toLowerCase().includes(search)
+        );
+      }
+      if (statusFilter) {
+        filtered = filtered.filter(r => 
+          statusFilter === 'attending' ? r.attended : !r.attended
+        );
+      }
+
+      tbody.innerHTML = '';
+      
+      if (!filtered.length) {
+        noneMsg.classList.remove('hidden');
+        return;
+      }
+      
+      noneMsg.classList.add('hidden');
+      
+      filtered.forEach(rsvp => {
+        const email = getRsvpStudentEmail(rsvp);
+        const course = getRsvpStudentCourse(rsvp);
+        let rsvpStatus = '';
+        let statusClass = '';
+        if (isPastEvent(rsvp) && !rsvp.attended) {
+          rsvpStatus = 'Not RSVPd';
+          statusClass = 'bg-gray-200 text-gray-600';
+        } else if (rsvp.attended) {
+          rsvpStatus = 'Will Attend';
+          statusClass = 'bg-green-100 text-green-800';
+        } else {
+          rsvpStatus = 'Will Not Attend';
+          statusClass = 'bg-red-100 text-red-800';
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${email}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${course}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">
+              ${rsvpStatus}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm">
+            <select class="attendance-select border rounded px-2 py-1" data-id="${rsvp.id}">
+              <option value="present" ${rsvp.present ? 'selected' : ''}>Present</option>
+              <option value="absent" ${!rsvp.present ? 'selected' : ''}>Absent</option>
+            </select>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+            <button class="edit-rsvp-btn bg-blue-500 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold mr-2" data-id="${rsvp.id}">Edit</button>
+            <button class="delete-rsvp-btn bg-red-500 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold" data-id="${rsvp.id}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Add event listeners for attendance select
+      tbody.querySelectorAll('.attendance-select').forEach(select => {
+        select.onchange = async function() {
+          const rsvpId = this.getAttribute('data-id');
+          const newStatus = this.value === 'present';
+          
+          try {
+            const res = await fetch(`http://localhost:5000/api/events/${currentEvent.id}/rsvps/${rsvpId}/attendance`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ present: newStatus })
+            });
+            
+            if (res.ok) {
+              showToast('Attendance updated successfully!');
+              await loadEventRsvps(currentEvent.id);
+            } else {
+              showToast('Failed to update attendance.', 'error');
+            }
+          } catch (err) {
+            showToast('Error updating attendance.', 'error');
+          }
+        };
+      });
+
+      // Add event listeners for edit button
+      tbody.querySelectorAll('.edit-rsvp-btn').forEach(btn => {
+        btn.onclick = function() {
+          const rsvpId = this.getAttribute('data-id');
+          const rsvp = currentEventRsvps.find(r => String(r.id) === String(rsvpId));
+          if (!rsvp) return;
+          // Populate modal fields
+          document.getElementById('editRsvpEmail').textContent = rsvp.studentEmail || rsvp.email || rsvp.student_id || (rsvp.student && rsvp.student.email) || 'N/A';
+          document.getElementById('editRsvpStatus').value = rsvp.attended ? 'attending' : 'not_attending';
+          document.getElementById('editRsvpPresent').value = rsvp.present ? 'present' : 'absent';
+          document.getElementById('editRsvpModal').classList.remove('hidden');
+          editingRsvpId = rsvp.id;
+        };
+      });
+
+      // Add event listeners for delete button
+      tbody.querySelectorAll('.delete-rsvp-btn').forEach(btn => {
+        btn.onclick = async function() {
+          const rsvpId = this.getAttribute('data-id');
+          if (!confirm('Are you sure you want to delete this RSVP?')) return;
+          
+          try {
+            const res = await fetch(`http://localhost:5000/api/events/${currentEvent.id}/rsvps/${rsvpId}/attendance`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ present: false })
+            });
+            
+            if (res.ok) {
+              showToast('RSVP deleted successfully!');
+              await loadEventRsvps(currentEvent.id);
+            } else {
+              showToast('Failed to delete RSVP.', 'error');
+            }
+          } catch (err) {
+            showToast('Error deleting RSVP.', 'error');
+          }
+        };
+      });
+    }
+
+    function updateBulkDeleteBtnVisibility() {
+      const checked = document.querySelectorAll('.rsvpCheckbox:checked').length;
+      const btn = document.getElementById('bulkDeleteBtn');
+      btn.classList.toggle('hidden', checked === 0);
+    }
+
+    document.getElementById('selectAllRsvps').onchange = function() {
+      document.querySelectorAll('.rsvpCheckbox').forEach(cb => cb.checked = this.checked);
+      updateBulkDeleteBtnVisibility();
+    };
+
+    // Update the event select change handler
+    const eventSelect = document.getElementById('eventSelect');
+    if (eventSelect) {
+      eventSelect.addEventListener('change', function() {
+        if (this.value) {
+          loadEventRsvps(this.value);
+        } else {
+          currentEventRsvps = [];
+          updateAttendeeStats();
+          renderAttendees();
+        }
+      });
+    }
+
+    // On page load, automatically select and load the first event
+    window.addEventListener('DOMContentLoaded', () => {
+      const eventSelect = document.getElementById('eventSelect');
+      if (eventSelect && eventSelect.value) {
+        loadEventRsvps(eventSelect.value);
+      }
+    });
+
+    // After events are loaded, update the eventSelect dropdown to only show upcoming and ongoing events
+    function populateEventSelect() {
+      const eventSelect = document.getElementById('eventSelect');
+      if (!eventSelect) return;
+      eventSelect.innerHTML = '<option value="">Select an event</option>';
+      const now = new Date();
+      const filtered = events.filter(event => {
+        const start = new Date(`${event.date}T${event.startTime}`);
+        const end = new Date(`${event.date}T${event.endTime}`);
+        return end >= now; // upcoming or ongoing
+      });
+      filtered.forEach(event => {
+        const opt = document.createElement('option');
+        opt.value = event.id;
+        opt.textContent = `${event.name} (${event.date} ${event.startTime}-${event.endTime})`;
+        eventSelect.appendChild(opt);
+      });
+    }
+
+    // Add JS logic for Edit RSVP List modal
+    async function openEditRsvpListModal(eventId) {
+      const body = document.getElementById('editRsvpListBody');
+      body.innerHTML = '<div class="text-center text-gray-400 py-4">Loading...</div>';
+      document.getElementById('editRsvpListModal').classList.remove('hidden');
+      try {
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}/rsvps`);
+        if (!res.ok) throw new Error('Failed to load RSVPs');
+        const rsvps = await res.json();
+        if (!rsvps.length) {
+          body.innerHTML = '<div class="text-center text-gray-400 py-4">No RSVPs found.</div>';
+          return;
+        }
+        body.innerHTML = '<ul class="divide-y divide-blue-100">' + rsvps.map(rsvp => `
+          <li class="flex items-center justify-between py-3 px-2">
+            <span class="text-gray-700">${rsvp.studentEmail || rsvp.email || rsvp.student_id || 'N/A'}</span>
+            <button class="delete-rsvp-btn bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-semibold" data-id="${rsvp.id}">Delete</button>
+          </li>
+        `).join('') + '</ul>';
+        // Add delete handlers
+        body.querySelectorAll('.delete-rsvp-btn').forEach(btn => {
+          btn.onclick = async function() {
+            const rsvpId = this.getAttribute('data-id');
+            if (!confirm('Delete this RSVP?')) return;
+            try {
+              const delRes = await fetch(`http://localhost:5000/api/events/${eventId}/rsvps/${rsvpId}`, { method: 'DELETE' });
+              if (delRes.ok) {
+                showToast('RSVP deleted!');
+                await openEditRsvpListModal(eventId);
+                // Refresh event details and table
+                if (typeof showEventDetails === 'function') await showEventDetails(events.find(e => e.id === eventId));
+                if (typeof fetchEvents === 'function') await fetchEvents();
+              } else {
+                showToast('Failed to delete RSVP.', 'error');
+              }
+            } catch (err) {
+              showToast('Error deleting RSVP.', 'error');
+            }
+          };
+        });
+      } catch (err) {
+        body.innerHTML = '<div class="text-center text-red-400 py-4">Failed to load RSVPs.</div>';
+      }
+    }
+    function closeEditRsvpListModal() {
+      document.getElementById('editRsvpListModal').classList.add('hidden');
+      if (typeof fetchEvents === 'function') fetchEvents();
+    }
+
+    // Add editRsvpForm submit handler
+    const editRsvpForm = document.getElementById('editRsvpForm');
+    if (editRsvpForm) {
+      editRsvpForm.onsubmit = async function(e) {
+        e.preventDefault();
+        if (!currentEvent || !editingRsvpId) return;
+        const attended = document.getElementById('editRsvpStatus').value === 'attending';
+        const present = document.getElementById('editRsvpPresent').value === 'present';
+        try {
+          const res = await fetch(`http://localhost:5000/api/events/${currentEvent.id}/rsvps/${editingRsvpId}/attendance`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ present: present })
+          });
+          if (res.ok) {
+            showToast('RSVP updated!');
+            document.getElementById('editRsvpModal').classList.add('hidden');
+            await loadEventRsvps(currentEvent.id);
+          } else {
+            showToast('Failed to update RSVP.', 'error');
+          }
+        } catch (err) {
+          showToast('Error updating RSVP.', 'error');
+        }
+      };
+    }
+
+    // Export functionality
+    function openExportModal() {
+      const modal = document.getElementById('exportModal');
+      const select = document.getElementById('exportEventSelect');
+      
+      // Clear existing options
+      select.innerHTML = '<option value="">Select an event</option>';
+      
+      // Add events to select
+      events.forEach(event => {
+        const opt = document.createElement('option');
+        opt.value = event.id;
+        opt.textContent = `${event.name} (${event.date} ${event.startTime}-${event.endTime})`;
+        select.appendChild(opt);
+      });
+      
+      modal.classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    function exportSelectedEvent() {
+      const eventId = document.getElementById('exportEventSelect').value;
+      if (!eventId) {
+        showToast('Please select an event to export', 'error');
+        return;
+      }
+      exportRsvpList(eventId);
+      closeExportModal();
+    }
+
+    async function exportRsvpList(eventId) {
+      try {
+        // Fetch event details first
+        const eventRes = await fetch(`http://localhost:5000/api/events/${eventId}`);
+        if (!eventRes.ok) {
+          const errorData = await eventRes.json();
+          throw new Error(errorData.error || 'Failed to fetch event details');
+        }
+        const eventData = await eventRes.json();
+        const event = {
+          name: eventData.name,
+          date: eventData.date,
+          startTime: eventData.startTime,
+          endTime: eventData.endTime,
+          venue: eventData.venue,
+          organization: eventData.organization,
+          description: eventData.description
+        };
+
+        // Fetch RSVPs
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}/rsvps`);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Failed to fetch RSVPs');
+        }
+        const rsvps = await res.json();
+
+        if (!rsvps || !Array.isArray(rsvps)) {
+          throw new Error('Invalid RSVP data received');
+        }
+
+        if (rsvps.length === 0) {
+          showToast('No RSVPs to export', 'error');
+          return;
+        }
+
+        // Process RSVPs to ensure consistent data
+        const processedRsvps = rsvps.map(rsvp => ({
+          email: getRsvpStudentEmail(rsvp),
+          course: getRsvpStudentCourse(rsvp),
+          status: rsvp.status || (rsvp.attended ? 'Will Attend' : 'Will Not Attend'),
+          attendance: rsvp.present ? 'Present' : 'Absent',
+          timestamp: rsvp.timestamp || 'N/A'
+        }));
+
+        // CSV header with event details
+        const eventDetails = [
+          ['Event Name', event.name || 'N/A'],
+          ['Date', event.date || 'N/A'],
+          ['Time', `${event.startTime || 'N/A'} - ${event.endTime || 'N/A'}`],
+          ['Venue', event.venue || 'N/A'],
+          ['Organization', event.organization || 'N/A'],
+          ['Description', event.description || 'N/A'],
+          []
+        ];
+
+        // Add RSVP data
+        const csvRows = [
+          ...eventDetails,
+          ['Student Email', 'RSVP Status', 'Attendance'],
+          ...rsvps.map(rsvp => [
+            getRsvpStudentEmail(rsvp),
+            rsvp.attended ? 'Will Attend' : 'Will Not Attend',
+            rsvp.present ? 'Present' : 'Absent'
+          ])
+        ];
+
+        const csvContent = csvRows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${event.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_rsvp_list.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('RSVP list exported successfully!');
+      } catch (error) {
+        console.error('Export error:', error);
+        showToast(error.message || 'Failed to export RSVP list', 'error');
+      }
+    }
+
+    function getRsvpStudentEmail(rsvp) {
+      return rsvp.studentEmail || rsvp.email || (rsvp.student && rsvp.student.email) || rsvp.student_id || 'N/A';
+    }
+    function getRsvpStudentCourse(rsvp) {
+      return rsvp.course || (rsvp.student && rsvp.student.course) || '';
+    }
+
+    document.getElementById('goEventBtn').onclick = function() {
+      const eventSelect = document.getElementById('eventSelect');
+      if (eventSelect.value) {
+        loadEventRsvps(eventSelect.value);
+      } else {
+        showToast('Please select an event.', 'error');
+        // Optionally clear the attendees list if no event is selected
+        currentEventRsvps = [];
+        updateAttendeeStats();
+        renderAttendees();
+      }
+    };
+
+    function exportRsvpListAsHtml(event, rsvps) {
+      const htmlContent = `
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${event.name} RSVP List</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #222; }
+            h1 { color: #2563eb; }
+            table { border-collapse: collapse; width: 100%; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px #0001; }
+            th, td { padding: 12px 16px; text-align: left; }
+            th { background: #e0f2fe; color: #2563eb; font-weight: 700; }
+            tr:nth-child(even) { background: #f8fafc; }
+            tr:hover { background: #e0e7ef; }
+            .status-attend { color: #16a34a; font-weight: bold; }
+            .status-not { color: #dc2626; font-weight: bold; }
+            .attendance-present { background: #bbf7d0; color: #166534; border-radius: 6px; padding: 2px 8px; }
+            .attendance-absent { background: #fee2e2; color: #991b1b; border-radius: 6px; padding: 2px 8px; }
+          </style>
+        </head>
+        <body>
+          <h1>${event.name} - RSVP List</h1>
+          <p><strong>Date:</strong> ${event.date} &nbsp; <strong>Time:</strong> ${event.startTime} - ${event.endTime}</p>
+          <p><strong>Venue:</strong> ${event.venue} &nbsp; <strong>Organization:</strong> ${event.organization}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Student Email</th>
+                <th>RSVP Status</th>
+                <th>Attendance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rsvps.map(rsvp => `
+                <tr>
+                  <td>${getRsvpStudentEmail(rsvp)}</td>
+                  <td class="${rsvp.attended ? 'status-attend' : 'status-not'}">
+                    ${rsvp.attended ? 'Will Attend' : 'Will Not Attend'}
+                  </td>
+                  <td>
+                    <span class="${rsvp.present ? 'attendance-present' : 'attendance-absent'}">
+                      ${rsvp.present ? 'Present' : 'Absent'}
+                    </span>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${event.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_rsvp_list.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    async function exportRsvpListAsPdf(eventId) {
+      try {
+        // Fetch event details
+        const eventRes = await fetch(`http://localhost:5000/api/events/${eventId}`);
+        if (!eventRes.ok) throw new Error('Failed to fetch event details');
+        const eventData = await eventRes.json();
+        const event = {
+          name: eventData.name,
+          date: eventData.date,
+          startTime: eventData.startTime,
+          endTime: eventData.endTime,
+          venue: eventData.venue,
+          organization: eventData.organization,
+          description: eventData.description
+        };
+
+        // Fetch RSVPs
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}/rsvps`);
+        if (!res.ok) throw new Error('Failed to fetch RSVPs');
+        const rsvps = await res.json();
+
+        // Build the HTML content
+        const htmlContent = `
+          <div style="font-family: 'Segoe UI', Arial, sans-serif; color: #222;">
+            <h1 style="color: #2563eb;">${event.name} - RSVP List</h1>
+            <p><strong>Date:</strong> ${event.date} &nbsp; <strong>Time:</strong> ${event.startTime} - ${event.endTime}</p>
+            <p><strong>Venue:</strong> ${event.venue} &nbsp; <strong>Organization:</strong> ${event.organization}</p>
+            <table style="border-collapse: collapse; width: 100%; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px #0001;">
+              <thead>
+                <tr>
+                  <th style="background: #e0f2fe; color: #2563eb; font-weight: 700; padding: 12px 16px;">Student Email</th>
+                  <th style="background: #e0f2fe; color: #2563eb; font-weight: 700; padding: 12px 16px;">RSVP Status</th>
+                  <th style="background: #e0f2fe; color: #2563eb; font-weight: 700; padding: 12px 16px;">Attendance</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rsvps.map(rsvp => `
+                  <tr>
+                    <td style="padding: 12px 16px;">${getRsvpStudentEmail(rsvp)}</td>
+                    <td style="padding: 12px 16px; color: ${rsvp.attended ? '#16a34a' : '#dc2626'}; font-weight: bold;">
+                      ${rsvp.attended ? 'Will Attend' : 'Will Not Attend'}
+                    </td>
+                    <td style="padding: 12px 16px;">
+                      <span style="background: ${rsvp.present ? '#bbf7d0' : '#fee2e2'}; color: ${rsvp.present ? '#166534' : '#991b1b'}; border-radius: 6px; padding: 2px 8px;">
+                        ${rsvp.present ? 'Present' : 'Absent'}
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        // Insert into hidden container
+        const container = document.getElementById('pdfExportContainer');
+        container.innerHTML = htmlContent;
+        container.style.display = 'block';
+
+        // Use html2pdf to export
+        await html2pdf().from(container).set({
+          margin: 0.5,
+          filename: `${event.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_rsvp_list.pdf`,
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        }).save();
+
+        container.style.display = 'none';
+        showToast('RSVP list exported as PDF!');
+      } catch (error) {
+        showToast(error.message || 'Failed to export RSVP list', 'error');
+      }
+    }
+
+    function exportSelectedEventPdf() {
+      const eventId = document.getElementById('exportEventSelect').value;
+      if (!eventId) {
+        showToast('Please select an event to export', 'error');
+        return;
+      }
+      exportRsvpListAsPdf(eventId);
+      closeExportModal();
+    }
+  </script>
+</body>
+</html>

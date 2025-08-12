@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./css/style.css">
+
+    <!-- AOS Library -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+</head>
+<body class="bg-blue-50 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="w-full flex items-center justify-between px-8 py-4 bg-white shadow-sm" data-aos="fade-down">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl font-bold text-blue-700">CampusConnect</span>
+        </div>
+        <a href="./signup.html" class="bg-blue-500 hover:bg-blue-700 text-white px-5 py-2 rounded font-semibold transition">Get started</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="flex flex-1 flex-col md:flex-row items-center justify-center px-8 py-12 gap-12 bg-blue-50" data-aos="fade-up">
+        <!-- Left: Text -->
+        <div class="flex-1 max-w-xl">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-800 mb-6 leading-tight">Where Innovation Meets Campus Connection.</h1>
+            <p class="text-lg text-blue-700 mb-8">Create and manage events, track attendance, and engage your campus — all from one smart dashboard.</p>
+            <div class="flex gap-4 mb-4">
+                <a href="./signup.html" class="bg-blue-500 hover:bg-blue-700 text-white px-7 py-3 rounded font-semibold text-lg transition">Get started</a>
+                <a href="./login.html" class="text-blue-500 hover:underline flex items-center text-lg">Login &rarr;</a>
+            </div>
+            <div class="text-gray-500 text-sm">No subscription. All features included.</div>
+        </div>
+        <!-- Right: Image -->
+        <div class="flex-1 flex justify-center">
+            <img src="./images/main_pic.jpg" alt="Event" class="rounded-lg shadow-lg w-full max-w-md object-cover" data-aos="zoom-in">
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="w-full bg-white py-12 px-8 flex flex-col md:flex-row justify-center gap-10 shadow-sm" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-blue-800 mb-8">Features</h2>
+        <div class="flex flex-col items-center text-center flex-1">
+            <svg class="w-10 h-10 text-blue-400 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/></svg>
+            <div class="font-semibold text-blue-800 mb-1">Easy Event Creation</div>
+            <div class="text-gray-600">Organizers can quickly launch events with a user-friendly form.</div>    
+        </div>
+        <div class="flex flex-col items-center text-center flex-1">
+            <svg class="w-10 h-10 text-blue-400 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            <div class="font-semibold text-blue-800 mb-1">Seamless Event RSVP</div>
+            <div class="text-gray-600">Students can easily RSVP to events and monitor event status.</div>
+        </div>
+        <div class="flex flex-col items-center text-center flex-1">
+            <svg class="w-10 h-10 text-blue-400 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 9V7a5 5 0 00-10 0v2a2 2 0 00-2 2v7a2 2 0 002 2h10a2 2 0 002-2v-7a2 2 0 00-2-2z"/></svg>
+            <div class="font-semibold text-blue-800 mb-1">Real-Time RSVP Tracking</div>
+            <div class="text-gray-600">Monitor attendee counts live and view detailed RSVP lists instantly from your dashboard.</div>
+        </div>
+    </section>
+
+    <!-- How it works Section -->
+    <section id="how" class="w-full py-16 px-8 bg-blue-50 flex flex-col items-center text-center" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-blue-800 mb-8">How does it work?</h2>
+        <div class="flex flex-col md:flex-row gap-8 mb-10 w-full max-w-4xl justify-center">
+            <div class="flex-1 bg-white rounded-lg shadow p-6 flex flex-col items-center" data-aos="flip-left">
+                <div class="text-blue-500 text-2xl font-bold mb-2">1</div>
+                <div class="font-semibold text-blue-800 mb-1">Role-Based Access & Dashboards</div>
+                <div class="text-gray-600">Users sign up as either students or event organizers.</div>
+            </div>
+            <div class="flex-1 bg-white rounded-lg shadow p-6 flex flex-col items-center" data-aos="flip-left" data-aos-delay="200">
+                <div class="text-blue-500 text-2xl font-bold mb-2">2</div>
+                <div class="font-semibold text-blue-800 mb-1">Live RSVP & Attendance Tracking</div>
+                <div class="text-gray-600">Track RSVP counts and attendance in real-time. Instantly see who's coming and export attendee lists if needed.</div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Initialize AOS animations
+        AOS.init({
+            duration: 1000,
+            once: true,
+            easing: 'ease-in-out',
+        });
+    </script>
+</body>
+</html>
